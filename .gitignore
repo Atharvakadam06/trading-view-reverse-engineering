@@ -6,3 +6,5 @@ video/
 dist/
 target/
 custom/signal-*.js
+
+.vercel
