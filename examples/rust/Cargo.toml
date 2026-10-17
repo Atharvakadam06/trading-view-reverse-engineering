@@ -1,0 +1,8 @@
+[package]
+name = "quant-terminal-example"
+version = "0.1.0"
+edition = "2021"
+description = "Drive Quant Terminal's local API from Rust (standard library only)"
+publish = false
+
+[dependencies]
