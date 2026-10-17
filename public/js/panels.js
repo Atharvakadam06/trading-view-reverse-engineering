@@ -1,4 +1,4 @@
-// Side panel (watchlist, alerts, calendar) and bottom panel (tester, screener, heatmap, paper, editor).
+﻿// Side panel (watchlist, alerts, calendar) and bottom panel (tester, screener, heatmap, paper, editor).
 import {
   api,
   download,
@@ -324,7 +324,7 @@ export function initPanels(app) {
         app.persist();
         return drawRows();
       }
-      app.setSymbol(row.dataset.sym);
+      app.setSymbol(row.dataset.sym); if (window.innerWidth <= 768 && app.toggleSide) app.toggleSide(false);
     };
     drawRows();
   }
@@ -383,7 +383,7 @@ export function initPanels(app) {
       list
         .map(
           (a) =>
-            `<div class="card" data-id="${a.id}"><div class="top"><div><b>${esc(ticker(a.symbol))}</b> <span class="muted">${esc(a.tf)}</span><div>${esc(describeAlert(a))}</div><div class="sub">${a.active ? "Active" : "Stopped"} · ${{ once: "only once", oncePerBar: "once per bar", oncePerBarClose: "once per bar close" }[a.trigger] || a.trigger}${a.webhook ? " · webhook" : ""}${a.fired ? ` · fired ${a.fired}x` : ""}</div></div><div class="row-flex" style="flex-wrap:nowrap"><button class="btn small" data-act="toggle">${a.active ? "Stop" : "Restart"}</button><button class="btn small danger" data-act="del">Delete</button></div></div></div>`,
+            `<div class="card" data-id="${a.id}"><div class="top"><div><b>${esc(ticker(a.symbol))}</b> <span class="muted">${esc(a.tf)}</span><div>${esc(describeAlert(a))}</div><div class="sub">${a.active ? "Active" : "Stopped"} Â· ${{ once: "only once", oncePerBar: "once per bar", oncePerBarClose: "once per bar close" }[a.trigger] || a.trigger}${a.webhook ? " Â· webhook" : ""}${a.fired ? ` Â· fired ${a.fired}x` : ""}</div></div><div class="row-flex" style="flex-wrap:nowrap"><button class="btn small" data-act="toggle">${a.active ? "Stop" : "Restart"}</button><button class="btn small danger" data-act="del">Delete</button></div></div></div>`,
         )
         .join("") ||
       '<div class="pad hint-text">No alerts yet. They run inside the app, so they keep firing with this tab closed as long as the app is running.</div>';
@@ -392,7 +392,7 @@ export function initPanels(app) {
         .slice(0, 30)
         .map(
           (e) =>
-            `<div class="card"><div>${esc(e.text)}</div><div class="sub">${new Date(e.at).toLocaleString()}${e.webhook ? ` · webhook ${esc(e.webhook)}` : ""}</div></div>`,
+            `<div class="card"><div>${esc(e.text)}</div><div class="sub">${new Date(e.at).toLocaleString()}${e.webhook ? ` Â· webhook ${esc(e.webhook)}` : ""}</div></div>`,
         )
         .join("") || '<div class="pad hint-text">Nothing has fired yet.</div>';
     $("#alList").onclick = async (e) => {
@@ -501,7 +501,7 @@ export function initPanels(app) {
       calView === "economic"
         ? '<select class="in" id="calF"><option value="all">All</option><option value="Medium">Medium + high</option><option value="High">High impact</option></select>'
         : `<label class="hint-text"><input type="checkbox" id="calMine" ${calMine ? "checked" : ""}> My watchlists</label>`
-    }</div><div id="calList" class="pad hint-text">Loading…</div>`;
+    }</div><div id="calList" class="pad hint-text">Loadingâ€¦</div>`;
     $("#calV").value = calView;
     $("#calV").onchange = (e) => { calView = e.target.value; renderCalendar(); };
     if ($("#calF")) { $("#calF").value = calFilter; $("#calF").onchange = (e) => { calFilter = e.target.value; renderCalendar(); }; }
@@ -520,7 +520,7 @@ export function initPanels(app) {
           const d = new Date(r.date);
           const label = d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
           const head = label !== day ? dayHead((day = label)) : "";
-          return `${head}<div class="card"><div class="top"><span><b>${esc(r.country)}</b> ${esc(r.title)}</span><span class="impact-${esc(r.impact)}">${esc(r.impact)}</span></div><div class="sub">${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}${r.forecast ? ` · forecast ${esc(r.forecast)}` : ""}${r.previous ? ` · previous ${esc(r.previous)}` : ""}</div></div>`;
+          return `${head}<div class="card"><div class="top"><span><b>${esc(r.country)}</b> ${esc(r.title)}</span><span class="impact-${esc(r.impact)}">${esc(r.impact)}</span></div><div class="sub">${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}${r.forecast ? ` Â· forecast ${esc(r.forecast)}` : ""}${r.previous ? ` Â· previous ${esc(r.previous)}` : ""}</div></div>`;
         }).join("") || '<div class="pad hint-text">Nothing at this impact level this week.</div>';
         return;
       }
@@ -530,13 +530,13 @@ export function initPanels(app) {
       list.className = "";
       list.innerHTML = rows.slice(0, 250).map((r) => {
         const head = r.date !== day ? dayHead(fmtDay((day = r.date))) : "";
-        const star = mine.has(r.symbol) ? ' <span class="up" title="On your watchlist">●</span>' : "";
+        const star = mine.has(r.symbol) ? ' <span class="up" title="On your watchlist">â—</span>' : "";
         const sub = calView === "earnings"
-          ? `${esc(r.when)}${r.epsForecast ? ` · EPS forecast ${esc(r.epsForecast)}` : ""}${r.lastYearEps ? ` · last year ${esc(r.lastYearEps)}` : ""}${r.marketCap ? ` · cap ${fmtNum(r.marketCap)}` : ""}`
-          : `${r.amount != null ? `${fmtPrice(r.amount)} a share` : ""}${r.payDate ? ` · paid ${esc(r.payDate)}` : ""}${r.annual ? ` · ${fmtPrice(r.annual)} a year` : ""}`;
+          ? `${esc(r.when)}${r.epsForecast ? ` Â· EPS forecast ${esc(r.epsForecast)}` : ""}${r.lastYearEps ? ` Â· last year ${esc(r.lastYearEps)}` : ""}${r.marketCap ? ` Â· cap ${fmtNum(r.marketCap)}` : ""}`
+          : `${r.amount != null ? `${fmtPrice(r.amount)} a share` : ""}${r.payDate ? ` Â· paid ${esc(r.payDate)}` : ""}${r.annual ? ` Â· ${fmtPrice(r.annual)} a year` : ""}`;
         return `${head}<div class="card cal-row" data-sym="${esc(r.symbol)}" style="cursor:pointer"><div class="top"><span><b>${esc(r.ticker)}</b>${star} <span class="muted">${esc((r.name || "").slice(0, 34))}</span></span></div><div class="sub">${sub}</div></div>`;
       }).join("") || `<div class="pad hint-text">${calMine ? "None of your watchlist symbols in the next five trading days." : "Nothing listed for the next five trading days."}</div>`;
-      list.onclick = (e) => { const row = e.target.closest(".cal-row"); if (row) app.setSymbol(row.dataset.sym); };
+      list.onclick = (e) => { const row = e.target.closest(".cal-row"); if (row) app.setSymbol(row.dataset.sym); if (window.innerWidth <= 768 && app.toggleSide) app.toggleSide(false); };
     } catch (e) {
       list.textContent = `Calendar unavailable: ${e.message}`;
     }
@@ -601,7 +601,7 @@ export function initPanels(app) {
       `<label class="field">${label}<input data-s="${k}" type="number" step="${step}" value="${tState.settings[k]}"></label>`;
     const saved = Object.keys(app.state.strategies || {});
     bottom.innerHTML = `<div class="tester"><div class="left">
-      <div class="row-flex"><select class="in" id="tPreset"><option value="">Load a strategy…</option><optgroup label="Examples">${Object.keys(
+      <div class="row-flex"><select class="in" id="tPreset"><option value="">Load a strategyâ€¦</option><optgroup label="Examples">${Object.keys(
         EXAMPLE_STRATEGIES,
       )
         .map((n) => `<option value="ex:${esc(n)}">${esc(n)}</option>`)
@@ -665,7 +665,7 @@ export function initPanels(app) {
       const f = e.target.files[0];
       if (!f) return;
       try {
-        app.toast(`Reading ${f.name}…`);
+        app.toast(`Reading ${f.name}â€¦`);
         const res = await fetch(`/api/import/${impKind}?name=${encodeURIComponent(f.name)}`, {
           method: "POST",
           headers: { "x-qt": "1", "Content-Type": "text/csv" },
@@ -761,7 +761,7 @@ export function initPanels(app) {
         const m = magnifierTf(sec, bars.at(-1).time - bars[0].time + sec);
         if (!m) app.toast("This chart is already as fine as the bar magnifier goes, so it uses the OHLC path.");
         else {
-          app.toast(`Loading ${m.tf} bars for the bar magnifier…`);
+          app.toast(`Loading ${m.tf} bars for the bar magnifierâ€¦`);
           const span = bars.at(-1).time - bars[0].time + sec;
           const r = await api.candles(p.cfg.symbol, m.tf, Math.ceil(span / m.seconds) + 10);
           subBars = r.candles.filter((c) => c.time >= bars[0].time && c.time < bars.at(-1).time + sec);
@@ -797,10 +797,10 @@ export function initPanels(app) {
     if (!out) return;
     const s = r.stats;
     const stat = (k, v, cls = "") =>
-      `<div class="stat"><div class="k">${k}</div><div class="v ${cls}">${v ?? "—"}</div></div>`;
-    const pc = (v) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v}%`);
-    out.innerHTML = `<div class="row-flex"><b>${esc(ticker(r.symbol))} ${esc(r.tf)}</b><span class="hint-text">${r.bars.length} bars · ${new Date(r.bars[0].time * 1000).toLocaleDateString()} to ${new Date(r.bars.at(-1).time * 1000).toLocaleDateString()} · ${esc(s.feesAndSlippage)} · ${esc(s.fills)}</span><span class="spacer"></span><button class="btn small" id="tCsv">Export trades (CSV)</button><button class="btn small" id="tClear">Clear chart marks</button></div>
-      <div class="stats">${stat("Net profit", pc(s.netProfitPct), s.netProfitPct >= 0 ? "up" : "down")}${stat("Buy and hold", pc(s.buyHoldPct), s.buyHoldPct >= 0 ? "up" : "down")}${stat("Max drawdown", s.maxDrawdownPct == null ? "—" : `-${s.maxDrawdownPct}%`, "down")}${stat("Trades", s.totalTrades)}${stat("Win rate", s.winRatePct == null ? "—" : `${s.winRatePct}%`)}${stat("Profit factor", s.profitFactor)}${stat("Sharpe", s.sharpe)}${stat("Sortino", s.sortino)}${stat("Avg trade", pc(s.avgTradePct))}${stat("Time in market", s.exposurePct == null ? "—" : `${s.exposurePct}%`)}</div>
+      `<div class="stat"><div class="k">${k}</div><div class="v ${cls}">${v ?? "â€”"}</div></div>`;
+    const pc = (v) => (v == null ? "â€”" : `${v >= 0 ? "+" : ""}${v}%`);
+    out.innerHTML = `<div class="row-flex"><b>${esc(ticker(r.symbol))} ${esc(r.tf)}</b><span class="hint-text">${r.bars.length} bars Â· ${new Date(r.bars[0].time * 1000).toLocaleDateString()} to ${new Date(r.bars.at(-1).time * 1000).toLocaleDateString()} Â· ${esc(s.feesAndSlippage)} Â· ${esc(s.fills)}</span><span class="spacer"></span><button class="btn small" id="tCsv">Export trades (CSV)</button><button class="btn small" id="tClear">Clear chart marks</button></div>
+      <div class="stats">${stat("Net profit", pc(s.netProfitPct), s.netProfitPct >= 0 ? "up" : "down")}${stat("Buy and hold", pc(s.buyHoldPct), s.buyHoldPct >= 0 ? "up" : "down")}${stat("Max drawdown", s.maxDrawdownPct == null ? "â€”" : `-${s.maxDrawdownPct}%`, "down")}${stat("Trades", s.totalTrades)}${stat("Win rate", s.winRatePct == null ? "â€”" : `${s.winRatePct}%`)}${stat("Profit factor", s.profitFactor)}${stat("Sharpe", s.sharpe)}${stat("Sortino", s.sortino)}${stat("Avg trade", pc(s.avgTradePct))}${stat("Time in market", s.exposurePct == null ? "â€”" : `${s.exposurePct}%`)}</div>
       <div class="equity" id="tEq"></div>
       <div id="tQuant"></div>
       <div id="tPtq"></div>
@@ -878,7 +878,7 @@ export function initPanels(app) {
     tf: "1D",
   };
   async function loadScreener() {
-    $("#scTable").innerHTML = '<div class="pad hint-text">Loading…</div>';
+    $("#scTable").innerHTML = '<div class="pad hint-text">Loadingâ€¦</div>';
     try {
       sc.rows = await api.get(`/api/screener?universe=${sc.universe}`);
       sc.scan = null;
@@ -961,7 +961,7 @@ export function initPanels(app) {
         .slice(0, 100)
         .map((r) => r.symbol);
       sc.scan = prev;
-      $("#scScan").textContent = `Scanning ${targets.length}…`;
+      $("#scScan").textContent = `Scanning ${targets.length}â€¦`;
       try {
         const res = await api.post("/api/scan", {
           symbols: targets,
@@ -997,7 +997,7 @@ export function initPanels(app) {
           ]
         : []),
     ];
-    box.innerHTML = `<table class="t"><thead><tr>${cols.map(([k, l]) => `<th data-k="${k}" class="${k === "name" || k === "sector" ? "l" : ""}">${l}${sc.sort === k ? (sc.dir < 0 ? " ↓" : " ↑") : ""}</th>`).join("")}</tr></thead><tbody>${rows
+    box.innerHTML = `<table class="t"><thead><tr>${cols.map(([k, l]) => `<th data-k="${k}" class="${k === "name" || k === "sector" ? "l" : ""}">${l}${sc.sort === k ? (sc.dir < 0 ? " â†“" : " â†‘") : ""}</th>`).join("")}</tr></thead><tbody>${rows
       .slice(0, 500)
       .map(
         (r) =>
@@ -1369,7 +1369,7 @@ export function initPanels(app) {
     const sym = app.active?.cfg.symbol || "";
     const px = price(sym) ?? app.active?.bars.at(-1)?.close;
     bottom.innerHTML = `<div class="tester"><div class="left">
-      <h4 style="margin-top:0">Order ticket · ${esc(ticker(sym))} ${px ? `<span class="muted">${fmtPrice(px)}</span>` : ""}</h4>
+      <h4 style="margin-top:0">Order ticket Â· ${esc(ticker(sym))} ${px ? `<span class="muted">${fmtPrice(px)}</span>` : ""}</h4>
       <div class="row-flex"><label class="field">Type<select id="ppType"><option value="market">Market</option><option value="limit">Limit</option><option value="stop">Stop</option></select></label><label class="field">Price<input id="ppPrice" type="number" step="any" value="${px ? Number(px.toPrecision(6)) : ""}" style="width:110px"></label><label class="field">Amount ($)<input id="ppAmt" type="number" step="any" value="1000" style="width:100px"></label></div>
       <div class="row-flex" style="margin-top:6px"><label class="field">Stop loss % (optional)<input id="ppSl" type="number" step="any" style="width:90px"></label><label class="field">Take profit % (optional)<input id="ppTp" type="number" step="any" style="width:90px"></label></div>
       <div class="row-flex" style="margin-top:10px"><button class="btn primary" id="ppBuy" style="background:var(--up);border-color:var(--up)">Buy</button><button class="btn primary" id="ppSell" style="background:var(--down);border-color:var(--down)">Sell / short</button></div>
@@ -1538,7 +1538,7 @@ export function initPanels(app) {
     }
     bottom.innerHTML = `<div class="tester"><div class="left"><div class="row-flex"><button class="btn primary" id="edNew">New indicator</button></div>
       <h4>Your indicators</h4><div id="edList">${edListHtml(list)}</div>
-      <p class="hint-text">Each indicator is a small JavaScript file in the app's <code>custom</code> folder, in the format in <code>docs/custom-indicators.md</code> (start from <code>docs/indicator-template.js</code>). Each one is checked before it's saved. You can also ask your AI agent: "add an indicator to Quant Terminal that…" and it will write the file for you.</p></div>
+      <p class="hint-text">Each indicator is a small JavaScript file in the app's <code>custom</code> folder, in the format in <code>docs/custom-indicators.md</code> (start from <code>docs/indicator-template.js</code>). Each one is checked before it's saved. You can also ask your AI agent: "add an indicator to Quant Terminal thatâ€¦" and it will write the file for you.</p></div>
       <div class="right"><div class="row-flex"><input class="in" id="edName" placeholder="Indicator name" style="flex:1"><button class="btn" id="edSave">Save</button><button class="btn primary" id="edSaveAdd">Save and add to chart</button></div><textarea class="in" id="edCode" spellcheck="false" style="flex:1;min-height:220px"></textarea><div id="edErr" class="down" style="white-space:pre-line"></div></div></div>`;
     const code = $("#edCode");
     code.value = TEMPLATE;

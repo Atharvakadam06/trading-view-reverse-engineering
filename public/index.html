@@ -77,6 +77,12 @@
           <path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20h4" /></svg
         ><span>Alert</span>
       </button>
+      <button id="sideToggleBtn" class="tb" title="Watchlist & Side panel">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span>Watchlist</span>
+      </button>
       <div class="spacer"></div>
       <a
         class="tb"
@@ -102,7 +108,7 @@
         </svg>
       </button>
       <button id="settingsBtn" class="tb icon" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
-    <button id="themeBtn" class="tb icon" title="Light / dark">
+      <button id="themeBtn" class="tb icon" title="Light / dark">
         <svg viewBox="0 0 24 24">
           <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
         </svg>
@@ -110,14 +116,7 @@
       <span id="status" class="status" title="Data status"></span>
     </header>
 
-    <div id="ribbon" class="ribbon hidden">
-    <span class="ribbon-badge">Part-Time Quant Academy</span>
-    <span><b>$500 monthly strategy competition.</b> Scored on simulated money, plus live calls, support and a trading buddy.</span>
-    <a class="ribbon-cta" href="https://www.skool.com/part-time-quant-academy/about" target="_blank" rel="noopener">Join the Academy for $29/month &#8599;</a>
-    <a class="ribbon-terms" href="https://www.part-timequant.com/competition-terms" target="_blank" rel="noopener">Rules</a>
-    <button class="ribbon-x" title="Hide for a week" aria-label="Hide">&times;</button>
-  </div>
-  <div class="main">
+    <div class="main">
       <nav class="drawbar" id="drawbar"></nav>
       <section class="center">
         <div id="grid" class="grid"></div>
@@ -130,7 +129,7 @@
             <button data-tab="financials">Financials</button>
             <button data-tab="paper">Paper trading</button>
             <button data-tab="editor">Indicator editor</button>
-          <button data-tab="ptq">PTQ</button>
+            <button data-tab="ptq">PTQ</button>
             <div class="spacer"></div>
             <button id="bottomToggle" class="icon" title="Show / hide panel">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" /></svg>
@@ -145,11 +144,13 @@
           <button data-tab="alerts">Alerts</button>
           <button data-tab="calendar">Calendar</button>
           <button data-tab="news">News</button>
+          <button id="sideCloseBtn" class="side-close-btn" title="Close panel">&times;</button>
         </div>
         <div class="tab-body" id="sideBody"></div>
       </aside>
     </div>
 
+    <div id="sideBackdrop" class="side-backdrop"></div>
     <div id="modal" class="modal hidden">
       <div class="modal-card" id="modalCard"></div>
     </div>

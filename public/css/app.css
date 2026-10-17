@@ -1006,22 +1006,6 @@ a.card.news:hover { border-color: var(--accent); }
 #tQuant, #tPtq { margin-top: 4px; }
 table.t.heat td { text-align: center; } table.t.heat td.base { outline: 2px solid var(--gold); outline-offset: -2px; font-weight: 700; }
 .ptq-verdict.warn { color: #f7a600; }
-/* Academy ribbon, in PTQ's own CTA language (part-timequant.com Academy card) */
-@property --academy-sheen-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-@keyframes academy-border-sheen { to { --academy-sheen-angle: 360deg; } }
-.ribbon { height: 46px; display: flex; align-items: center; gap: 14px; padding: 0 14px; background: #f6f6f8; border-bottom: 1px solid rgba(8, 126, 229, 0.35); box-shadow: 0 3px 22px rgba(8, 126, 229, 0.28); position: relative; z-index: 3; color: #0b0b10; font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; white-space: nowrap; overflow: hidden; }
-.ribbon > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; flex: 1; color: #3b3f4b; }
-.ribbon > span:nth-child(2) b { color: #0b0b10; font-weight: 600; }
-.ribbon-badge { flex: none; background: #087ee5; color: #fff; font-family: "Fragment Mono", ui-monospace, monospace; font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; padding: 6px 13px; border-radius: 20px; }
-.ribbon-cta, .btn.academy { flex: none; position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 8px; background: #dc2626; color: #fff; font-weight: 600; text-decoration: none; padding: 8px 18px; border-radius: 999px; border: 0; }
-.ribbon-cta:hover, .btn.academy:hover { filter: brightness(0.93); color: #fff; }
-.ribbon-cta::after, .btn.academy::after { content: ""; position: absolute; inset: 0; padding: 2px; border-radius: inherit; background: conic-gradient(from var(--academy-sheen-angle), transparent 0deg, transparent 230deg, #8b7cff 265deg, #b6eaff 292deg, #fff 310deg, #0a8cff 335deg, transparent 360deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; animation: academy-border-sheen 5s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .ribbon-cta::after, .btn.academy::after { animation: none; --academy-sheen-angle: 135deg; } }
-.ribbon-terms { flex: none; color: #087ee5; font-size: 12px; }
-.ribbon-x { flex: none; border: 0; background: transparent; color: #5b5f6b; font-size: 18px; cursor: pointer; }
-.ribbon-x:hover { color: #0b0b10; }
-body.has-ribbon .main { height: calc(100% - 90px); }
-
 /* PTQ: its own brand, from part-timequant.com's dark appearance (globals.css, 29 Sep 2026):
    near-black ground with rose/cyan/peach glows, glass panels, Instrument Sans with an
    Instrument Serif italic accent, Fragment Mono eyebrows, blue pill buttons. */
@@ -1102,320 +1086,381 @@ body.has-ribbon .main { height: calc(100% - 90px); }
 .tester.ptq-brand .left { border-right-color: rgba(255, 255, 255, 0.1); }
 .tabs button[data-tab="ptq"] { color: #6cb8ff; font-weight: 600; }
 
+
 /* ================================================================
-   MOBILE RESPONSIVE — TradingView-style phone layout
-   Breakpoints: 768px (tablet), 480px (phone)
+   MOBILE RESPONSIVE — TradingView App Standard Phone Layout
    ================================================================ */
 
-/* ------ Tablet / small desktop (≤ 900px) ------ */
-@media (max-width: 900px) {
-  .side {
-    width: 240px;
-  }
-  .topbar {
-    gap: 1px;
-    padding: 0 4px;
-  }
-  .tb span { display: none; }
-  #indicatorsBtn span,
-  #compareBtn span,
-  #replayBtn span,
-  #alertBtn span { display: none; }
+/* Backdrop overlay for mobile drawer */
+.side-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.side-backdrop.open {
+  display: block;
+  opacity: 1;
 }
 
-/* ------ Tablet (≤ 768px) ------ */
+/* Close button on mobile side drawer */
+.side-close-btn {
+  display: none;
+}
+
+/* Base Topbar horizontal swipe */
+.topbar {
+  height: 44px;
+  min-height: 44px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  z-index: 20;
+  flex-shrink: 0;
+}
+.topbar::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.topbar .tb,
+.topbar select,
+.topbar input,
+.topbar .tf-group,
+.topbar .brand,
+.topbar .sep {
+  flex-shrink: 0;
+}
+
+#sideToggleBtn {
+  background: var(--hover);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  border-radius: 4px;
+  height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+#sideToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* Viewport fit for phone screens */
+@media (max-width: 900px) {
+  .tb span { display: inline; }
+}
+
+/* Tablet & Mobile Screens (<= 768px) */
 @media (max-width: 768px) {
-  /* Hide right side panel — accessible via bottom tabs instead */
-  .side {
-    display: none;
+  html, body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    touch-action: manipulation;
   }
-
-  /* Collapse drawbar to icon-only strip */
-  .drawbar {
-    width: 38px;
-  }
-  .drawbar button {
-    width: 30px;
-    height: 30px;
-  }
-
-  /* Topbar: 2-row layout */
-  .topbar {
-    height: auto;
-    flex-wrap: wrap;
-    padding: 4px 6px;
-    gap: 2px;
-    overflow: visible;
-  }
-
-  /* First row: brand + symbol + spacer */
-  .brand { order: 0; }
-  #symbolBtn { order: 1; font-size: 13px; }
-  .spacer { order: 2; flex: 1; }
-  #themeBtn { order: 3; }
-  #settingsBtn { order: 4; }
-  #snapBtn { order: 5; }
-
-  /* Second row: timeframes (scroll horizontally) */
-  #tfButtons { order: 10; width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
-  #tfCustom { order: 11; }
-  #chartType { order: 12; font-size: 12px; max-width: 90px; }
-
-  /* Hide less important topbar buttons on tablet */
-  .sep { display: none; }
-  #compareBtn { display: none; }
-  #replayBtn { display: none; }
-  #alertBtn { display: none; }
-  #csvBtn { display: none; }
-  #logBtn { display: none; }
-  a.tb[href*="help"] { display: none; }
-  #syncSymbol { display: none; }
-  label.tb.check { display: none; }
-  #layoutSel { display: none; }
 
   .main {
-    height: calc(100% - 80px);
-  }
-  body.has-ribbon .main {
-    height: calc(100% - 126px);
-  }
-
-  /* Bottom panel: full height when open */
-  .bottom {
-    height: 260px;
-  }
-  .bottom.collapsed {
-    height: 39px;
-  }
-}
-
-/* ------ Phone (≤ 480px) — TradingView mobile clone ------ */
-@media (max-width: 480px) {
-  html, body {
-    font-size: 12px;
+    height: calc(100% - 44px);
+    height: calc(100dvh - 44px);
+    width: 100%;
+    display: flex;
+    position: relative;
     overflow: hidden;
   }
 
-  /* Compact single-row topbar */
-  .topbar {
-    height: 48px;
-    flex-wrap: nowrap;
-    padding: 0 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 1px;
-  }
-  .topbar::-webkit-scrollbar { height: 0; }
-
-  .brand svg { width: 18px; height: 18px; }
-  .brand { padding: 0 4px 0 0; }
-
-  #symbolBtn {
-    font-size: 14px;
-    font-weight: 700;
-    padding: 0 6px;
-    min-width: 0;
-    flex-shrink: 1;
-  }
-
-  /* Timeframe buttons — compact */
-  #tfButtons {
-    order: 0;
-    display: flex;
-    gap: 0;
-    overflow: visible;
-    width: auto;
-    flex-shrink: 0;
-  }
-  .tf-group button {
-    min-width: 28px;
-    padding: 0 4px;
-    font-size: 11px;
-    height: 28px;
-  }
-  #tfCustom {
-    width: 36px;
-    height: 26px;
-    font-size: 11px;
-    padding: 0 4px;
-    margin-left: 2px;
-  }
-
-  /* Chart type — icon only */
-  #chartType {
-    max-width: 70px;
-    font-size: 11px;
-    padding-right: 18px;
-    background-position: calc(100% - 8px) 11px, calc(100% - 4px) 11px;
-  }
-
-  /* Essential toolbar buttons only */
-  #indicatorsBtn { order: 2; padding: 0 6px; }
-  #indicatorsBtn span { display: none; }
-  #settingsBtn { padding: 0 5px; }
-  #themeBtn { padding: 0 5px; }
-  #snapBtn { display: none; }
-  #logBtn { display: none; }
-  #csvBtn { display: none; }
-  #compareBtn { display: none; }
-  #replayBtn { display: none; }
-  #alertBtn { display: none; }
-  a.tb[href*="help"] { display: none; }
-  label.tb.check { display: none; }
-  #layoutSel { display: none; }
-  #status { display: none; }
-  .sep { display: none; }
-  .spacer { display: none; }
-
-  /* Remove second row — all in one line */
-  .main {
-    height: calc(100% - 48px);
-  }
-  body.has-ribbon .main {
-    height: calc(100% - 94px);
-  }
-
-  /* Narrow drawbar */
+  /* Drawing toolbar as sleek mobile strip */
   .drawbar {
     width: 36px;
-    padding-top: 4px;
-    gap: 1px;
+    flex-shrink: 0;
+    padding: 3px 0;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
   }
+  .drawbar::-webkit-scrollbar { display: none; }
   .drawbar button {
-    width: 28px;
-    height: 28px;
-    border-radius: 3px;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    margin: 0 auto;
+    flex-shrink: 0;
   }
   .drawbar svg {
     width: 15px;
     height: 15px;
   }
 
-  /* Hide side panel entirely */
-  .side { display: none; }
-
-  /* Chart legend — compact on small screens */
-  .legend {
-    font-size: 10px;
-    max-width: calc(100% - 70px);
+  .center {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
   }
-  .legend .title { font-size: 11px; }
-  .legend .ohlc span { margin-right: 3px; }
 
-  /* Bottom panel — shorter on phones */
+  .grid {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  /* Slide-over Watchlist Drawer */
+  .side {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 86vw;
+    max-width: 360px;
+    height: 100%;
+    height: 100dvh;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+    transform: translateX(105%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    visibility: hidden;
+  }
+  .side.open {
+    transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .side-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .side-close-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Bottom tabs & panel */
   .bottom {
-    height: 200px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    transition: height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
   }
-  .bottom.collapsed { height: 36px; }
-
-  /* Bottom tabs — scrollable horizontal */
-  .tabs {
+  .bottom.collapsed {
     height: 36px;
-    gap: 0;
+  }
+  .bottom:not(.collapsed) {
+    height: 50%;
+    max-height: 52vh;
+  }
+  .bottom .tabs {
+    height: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
     padding: 0 4px;
     overflow-x: auto;
     overflow-y: hidden;
-  }
-  .tabs::-webkit-scrollbar { height: 0; }
-  .tabs button {
-    font-size: 11px;
-    padding: 0 7px;
-    height: 28px;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
     white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--border);
+  }
+  .bottom .tabs::-webkit-scrollbar { display: none; }
+  .bottom .tabs button {
+    height: 28px;
+    padding: 0 9px;
+    font-size: 11px;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
-  /* Modal — full screen on phone */
+  /* Modals on tablet/phone */
   .modal-card {
-    margin: 0;
-    max-width: 100vw;
-    max-height: 100vh;
-    width: 100vw;
-    border-radius: 0;
+    margin: 12px auto;
+    max-width: calc(100vw - 20px);
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 10px;
     overflow-y: auto;
   }
-
-  /* Touch-friendly rows */
-  .wl-row {
-    padding: 8px 10px;
-    min-height: 44px;
-  }
-  .wl-row .x { opacity: 1; }
-
-  /* Replay bar — touch-friendly */
-  .replay-bar {
-    bottom: 48px;
-    padding: 6px 8px;
-    gap: 6px;
-  }
-  .replay-bar button, .replay-bar select {
-    height: 34px;
-    padding: 0 10px;
-  }
-
-  /* Bigger tap targets for buttons */
-  .tb {
-    height: 36px;
-    min-width: 36px;
-  }
-  .btn { height: 34px; }
-
-  /* Toast — full width on phone */
-  .toasts {
-    left: 8px;
-    right: 8px;
-    bottom: 12px;
-  }
-
-  /* Ribbon compact */
-  .ribbon {
-    padding: 6px 10px;
-    font-size: 11px;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .ribbon-cta { font-size: 11px; padding: 4px 10px; }
-  body.has-ribbon .main { height: calc(100% - 48px - 46px); }
 }
 
-/* ------ Very small (≤ 360px) — small Android phones ------ */
+/* Phone screens (<= 480px) */
+@media (max-width: 480px) {
+  .topbar {
+    height: 42px;
+    min-height: 42px;
+    padding: 0 5px;
+    gap: 2px;
+  }
+  .main {
+    height: calc(100% - 42px);
+    height: calc(100dvh - 42px);
+  }
+
+  .tb {
+    height: 30px;
+    padding: 0 7px;
+    font-size: 11px;
+    border-radius: 3px;
+  }
+  .tb.icon {
+    width: 30px;
+    min-width: 30px;
+    padding: 0;
+  }
+
+  #symbolBtn {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 8px;
+  }
+
+  .tf-group button {
+    height: 28px;
+    min-width: 26px;
+    font-size: 10px;
+    padding: 0 4px;
+  }
+
+  #tfCustom {
+    width: 32px;
+    height: 28px;
+    font-size: 10px;
+    padding: 0 3px;
+  }
+
+  #chartType {
+    height: 28px;
+    font-size: 11px;
+    max-width: 78px;
+    padding-left: 5px;
+  }
+
+  #layoutSel {
+    height: 28px;
+    font-size: 11px;
+    max-width: 75px;
+  }
+
+  #sideToggleBtn {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .drawbar {
+    width: 34px;
+  }
+  .drawbar button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .legend {
+    font-size: 10px;
+    max-width: calc(100% - 50px);
+  }
+  .legend .ohlc span {
+    margin-right: 3px;
+  }
+
+  .wl-row {
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+
+  .modal-card {
+    margin: 6px auto;
+    max-width: calc(100vw - 12px);
+    width: calc(100vw - 12px);
+    max-height: calc(100dvh - 16px);
+  }
+}
+
+/* Very narrow phones (<= 360px) */
 @media (max-width: 360px) {
-  .topbar { padding: 0 4px; gap: 0; }
-  #symbolBtn { font-size: 13px; }
-  .tf-group button { min-width: 24px; font-size: 10px; padding: 0 3px; }
-  #tfCustom { width: 30px; font-size: 10px; }
+  .drawbar { width: 30px; }
+  .drawbar button { width: 26px; height: 26px; }
+  .topbar { padding: 0 3px; gap: 1px; }
+}
+
+/* Landscape phone */
+@media (max-height: 480px) and (orientation: landscape) {
+  .topbar { height: 38px; min-height: 38px; }
+  .main { height: calc(100% - 38px); height: calc(100dvh - 38px); }
+  .bottom.collapsed { height: 32px; }
+  .bottom:not(.collapsed) { height: 42%; }
   .drawbar { width: 32px; }
   .drawbar button { width: 26px; height: 26px; }
 }
 
-/* ------ Landscape phone (≤ 844px tall, ≤ 926px wide) ------ */
-@media (max-height: 450px) and (orientation: landscape) {
-  .topbar { height: 40px; }
-  .main { height: calc(100% - 40px); }
-  .bottom { height: 160px; }
-  .bottom.collapsed { height: 34px; }
-  .drawbar { padding-top: 2px; }
-  .legend { font-size: 10px; }
-}
-
-/* ------ Touch device: bigger tap targets for all interactive elements ------ */
+/* Touch targets */
 @media (pointer: coarse) {
-  .tb { height: 40px; min-width: 40px; }
-  .tf-group button { height: 36px; min-width: 32px; }
-  .tabs button { height: 36px; padding: 0 10px; }
-  .wl-row { min-height: 48px; padding: 9px 12px; }
-  .btn { height: 36px; padding: 0 16px; }
-  .drawbar button { width: 36px; height: 36px; }
-  input.in, select.in { height: 36px; }
-  .wl-row .x { opacity: 1; }
+  .tb { min-height: 32px; }
+  .drawbar button { min-height: 30px; }
+  .wl-row { min-height: 46px; }
+  .tabs button { min-height: 30px; }
 }
 
-/* ------ Safe area insets for iPhone notch / home bar ------ */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
+/* Safe areas */
+@supports (padding: env(safe-area-inset-top)) {
   .topbar {
-    padding-left: max(8px, env(safe-area-inset-left));
-    padding-right: max(8px, env(safe-area-inset-right));
+    padding-left: max(6px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
     padding-top: env(safe-area-inset-top);
+    height: calc(44px + env(safe-area-inset-top));
   }
   .bottom {
     padding-bottom: env(safe-area-inset-bottom);

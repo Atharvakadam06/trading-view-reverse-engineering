@@ -1,4 +1,4 @@
-import { api, download, esc, ticker, exchange } from "./api.js";
+﻿import { api, download, esc, ticker, exchange } from "./api.js";
 import { ChartPane, CHART_TYPES, newUid } from "./chart.js";
 import { TOOLS } from "./drawings.js";
 import {
@@ -81,7 +81,7 @@ class App {
     this.setLayout(this.state.layout, false);
     this.panels = initPanels(this);
     this.bindKeys();
-    this.showRibbon();
+    // ribbon removed
     this.listenAlerts();
     this.checkHealth();
     setInterval(() => this.checkHealth(), 60000);
@@ -261,7 +261,7 @@ class App {
           this.persist();
           this.active.load({ keepView: true });
         },
-        "Compare with…",
+        "Compare withâ€¦",
       );
     $("#layoutSel").onchange = (e) => this.setLayout(e.target.value);
     $("#syncSymbol").checked = !!this.settings.syncSymbol;
@@ -299,6 +299,19 @@ class App {
       this.persist();
     };
     $("#settingsBtn").onclick = () => this.openSettings();
+    const sideEl = $(".side");
+    const backdropEl = $("#sideBackdrop");
+    const toggleSide = (force) => {
+      const isOpen = force !== undefined ? force : !sideEl?.classList.contains("open");
+      sideEl?.classList.toggle("open", isOpen);
+      backdropEl?.classList.toggle("open", isOpen);
+    };
+    const sideToggleBtn = $("#sideToggleBtn");
+    if (sideToggleBtn) sideToggleBtn.onclick = () => toggleSide();
+    const sideCloseBtn = $("#sideCloseBtn");
+    if (sideCloseBtn) sideCloseBtn.onclick = () => toggleSide(false);
+    if (backdropEl) backdropEl.onclick = () => toggleSide(false);
+    this.toggleSide = toggleSide;
   }
 
   syncToolbar() {
@@ -306,7 +319,7 @@ class App {
     if (!p) return;
     $("#symbolLabel").textContent = ticker(p.cfg.symbol);
     $("#symbolBtn").title =
-      `${p.cfg.symbol} — change symbol (or just start typing)`;
+      `${p.cfg.symbol} â€” change symbol (or just start typing)`;
     document
       .querySelectorAll("#tfButtons button")
       .forEach((b) => b.classList.toggle("active", b.dataset.tf === p.cfg.tf));
@@ -391,7 +404,7 @@ class App {
   openSymbolSearch(initial = "", onPick = null, title = "Symbol search") {
     const card = this.modal(
       title,
-      `<input class="search-in" id="symQ" placeholder="BTC, AAPL, EURUSD, ^FTSE, VOD.L…" autocomplete="off" value="${esc(initial)}"><div class="list" id="symList"></div><div class="hint-text" style="margin-top:8px">Crypto: Binance (falls back to Coinbase and Kraken). US stocks and ETFs: Nasdaq. Forex: Kraken. Global indices, futures and non-US stocks use Yahoo symbols (YAHOO:^FTSE, YAHOO:GC=F) when Yahoo is reachable.</div>`,
+      `<input class="search-in" id="symQ" placeholder="BTC, AAPL, EURUSD, ^FTSE, VOD.Lâ€¦" autocomplete="off" value="${esc(initial)}"><div class="list" id="symList"></div><div class="hint-text" style="margin-top:8px">Crypto: Binance (falls back to Coinbase and Kraken). US stocks and ETFs: Nasdaq. Forex: Kraken. Global indices, futures and non-US stocks use Yahoo symbols (YAHOO:^FTSE, YAHOO:GC=F) when Yahoo is reachable.</div>`,
     );
     const q = card.querySelector("#symQ"),
       list = card.querySelector("#symList");
@@ -408,7 +421,7 @@ class App {
         results
           .map(
             (r, i) =>
-              `<div class="item ${i === sel ? "sel" : ""}" data-i="${i}"><span><b>${esc(ticker(r.symbol))}</b> <span class="muted">${esc(r.name || "")}</span></span><span class="meta">${esc(r.type || "")} · ${esc(r.exchange || "")}</span></div>`,
+              `<div class="item ${i === sel ? "sel" : ""}" data-i="${i}"><span><b>${esc(ticker(r.symbol))}</b> <span class="muted">${esc(r.name || "")}</span></span><span class="meta">${esc(r.type || "")} Â· ${esc(r.exchange || "")}</span></div>`,
           )
           .join("") ||
         (q.value.trim()
@@ -464,7 +477,7 @@ class App {
   openIndicatorPicker() {
     const card = this.modal(
       "Indicators",
-      `<input class="search-in" id="indQ" placeholder="Search ${INDICATORS.length} indicators…" autocomplete="off"><div class="list" id="indList"></div>`,
+      `<input class="search-in" id="indQ" placeholder="Search ${INDICATORS.length} indicatorsâ€¦" autocomplete="off"><div class="list" id="indList"></div>`,
       {
         foot: '<span class="hint-text" style="margin-right:auto">No limit per chart. Write your own in the Indicator editor tab.</span><button class="btn" data-new>New custom indicator</button>',
       },
@@ -715,19 +728,7 @@ class App {
   }
 
   // The Academy ribbon: hidden for a week after it's closed.
-  showRibbon() {
-    const el = $("#ribbon");
-    let hiddenUntil = 0;
-    try { hiddenUntil = Number(localStorage.getItem("qt-ribbon-hidden-until")) || 0; } catch { /* storage off */ }
-    if (Date.now() < hiddenUntil) return;
-    el.classList.remove("hidden");
-    document.body.classList.add("has-ribbon");
-    el.querySelector(".ribbon-x").onclick = () => {
-      el.classList.add("hidden");
-      document.body.classList.remove("has-ribbon");
-      try { localStorage.setItem("qt-ribbon-hidden-until", String(Date.now() + 7 * 86400e3)); } catch { /* storage off */ }
-    };
-  }
+  showRibbon() {}
 
   // ---------- prices, alerts, status ----------
   onPrice(symbol, price) {
