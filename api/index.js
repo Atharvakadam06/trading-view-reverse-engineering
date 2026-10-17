@@ -1,4 +1,7 @@
-﻿// Vercel serverless entry-point for all /api/* routes.
+// Set writable data dir for Vercel serverless (read-only filesystem except /tmp)
+process.env.QT_DATA_DIR = process.env.QT_DATA_DIR || '/tmp/qt-data';
+
+// Vercel serverless entry-point for all /api/* routes.
 // Re-uses route handler logic extracted from server.js.
 
 import path from "node:path";

@@ -1,1 +1,1 @@
-{"version":2,"outputDirectory":"public","rewrites":[{"source":"/api/(.*)","destination":"/api/index"}],"functions":{"api/index.js":{"maxDuration":30}}}
+{"version":2,"buildCommand":"echo build","outputDirectory":"public","installCommand":"npm install","rewrites":[{"source":"/api/(.*)","destination":"/api/index"}],"functions":{"api/index.js":{"maxDuration":30}}}
