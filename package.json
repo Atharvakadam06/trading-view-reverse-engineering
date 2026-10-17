@@ -1,1 +1,18 @@
-{"name":"quant-terminal","version":"1.0.0","description":"A free, local trading terminal","type":"module","private":true,"engines":{"node":">=18"},"scripts":{"build":"echo Static build","start":"node server.local.js --open","serve":"node server.local.js","test":"node --test test/indicators.test.js","doctor":"node scripts/doctor.js"},"license":"MIT"}
+{
+    "name":  "quant-terminal",
+    "version":  "1.0.0",
+    "description":  "A free, local trading terminal",
+    "type":  "module",
+    "private":  true,
+    "engines":  {
+                    "node":  "\u003e=18"
+                },
+    "scripts":  {
+                    "build":  "echo Static build",
+                    "start":  "node server.js --open",
+                    "serve":  "node server.js",
+                    "test":  "node --test test/indicators.test.js",
+                    "doctor":  "node scripts/doctor.js"
+                },
+    "license":  "MIT"
+}

@@ -1,4 +1,4 @@
-// Set writable data dir for Vercel serverless (read-only filesystem except /tmp)
+﻿// Set writable data dir for Vercel serverless (read-only filesystem except /tmp)
 process.env.QT_DATA_DIR = process.env.QT_DATA_DIR || '/tmp/qt-data';
 
 // Vercel serverless entry-point for all /api/* routes.
@@ -61,8 +61,10 @@ const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 const customErrors = {};
 
 function listCustom() {
-  fs.mkdirSync(CUSTOM, { recursive: true });
-  return fs.readdirSync(CUSTOM).filter((f) => f.endsWith(".js")).map((f) => ({ file: f, id: `custom:${f.replace(/\.js$/, "")}`, mtime: fs.statSync(path.join(CUSTOM, f)).mtimeMs, error: customErrors[f] || null }));
+  try { fs.mkdirSync(CUSTOM, { recursive: true }); } catch {}
+  try {
+    return fs.readdirSync(CUSTOM).filter((f) => f.endsWith(".js")).map((f) => ({ file: f, id: `custom:${f.replace(/\.js$/, "")}`, mtime: fs.statSync(path.join(CUSTOM, f)).mtimeMs, error: customErrors[f] || null }));
+  } catch { return []; }
 }
 
 async function loadCustom(file) {

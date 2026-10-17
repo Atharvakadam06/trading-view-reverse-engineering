@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 // Quant Terminal server. Node 18+ and nothing else: no npm install, no build step.
 //   node server.js            start on http://localhost:3777 (or the next free port)
 //   node server.js --open     start and open your browser
@@ -94,6 +94,7 @@ async function readText(req, limit = 300e6) {
 // The server only answers to this machine's browser. Writes need a custom header, which a random
 // website can't add to a cross-site request, so other pages can't drive your terminal.
 function allowed(req) {
+  if (process.env.VERCEL) return true;
   const host = (req.headers.host || "")
     .replace(/:\d+$/, "")
     .replace(/^\[|\]$/g, "");
@@ -561,3 +562,5 @@ if (isMain) {
   process.on("SIGINT", bye);
   process.on("SIGTERM", bye);
 }
+
+export default handle;
