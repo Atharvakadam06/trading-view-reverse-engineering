@@ -156,6 +156,7 @@ export class ChartPane {
         background: { type: "solid", color: css("--bg") },
         textColor: css("--text"),
         fontSize: 11,
+        attributionLogo: false,
         panes: {
           separatorColor: css("--border"),
           separatorHoverColor: css("--accent-soft"),

@@ -1,4 +1,22 @@
 
+/* Completely remove TradingView attribution logo / watermark from chart */
+#tv-attr-logo,
+a#tv-attr-logo,
+.tv-attr-logo,
+a[href*="tradingview.com"],
+a[title*="TradingView"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  z-index: -9999 !important;
+}
+
+
 /* Bottom Panel Header Styling */
 .bottom-header {
   height: 38px;
