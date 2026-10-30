@@ -1,4 +1,81 @@
 
+/* Bottom Panel Header Styling */
+.bottom-header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  padding: 0 4px;
+  position: relative;
+  flex: none;
+}
+.bottom-header .tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.bottom-header .tabs::-webkit-scrollbar {
+  display: none;
+}
+.bottom-ctrls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 6px;
+  background: var(--panel);
+  z-index: 10;
+}
+
+
+/* Global slide panel close buttons */
+.side-close-btn,
+.bottom-close-btn,
+.drawbar-close-btn {
+  display: grid;
+  place-items: center;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.side-close-btn:hover,
+.bottom-close-btn:hover,
+.drawbar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.side-close-btn:active,
+.bottom-close-btn:active,
+.drawbar-close-btn:active {
+  transform: scale(0.92);
+}
+.side-close-btn svg,
+.bottom-close-btn svg,
+.drawbar-close-btn svg {
+  stroke: currentColor;
+  fill: none;
+}
+.bottom-close-btn {
+  display: none;
+}
+.drawbar-close-btn {
+  display: none;
+}
+.side-drag-handle,
+.bottom-drag-handle {
+  display: none;
+}
+
+
 :root,
 [data-theme="dark"] {
   --bg: #131722;
@@ -725,6 +802,326 @@ select.tb option {
 }
 
 @media (max-width: 768px) {
+  /* On mobile: Hide collapsed bottom panel tabs completely to maximize chart view */
+  .bottom.collapsed {
+    display: none !important;
+  }
+  .bottom:not(.collapsed) {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 52px !important;
+    height: 62vh !important;
+    max-height: 70vh !important;
+    background: var(--bg) !important;
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7) !important;
+    z-index: 1005 !important;
+    border-radius: 14px 14px 0 0 !important;
+    overflow: hidden !important;
+    transform: translateY(0) !important;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .bottom-ctrls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  .bottom-close-btn {
+    display: grid !important;
+    place-items: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    border-radius: 50% !important;
+    background: var(--hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    cursor: pointer !important;
+  }
+  #bottomToggle {
+    display: none !important;
+  }
+
+  /* Close buttons on mobile - always visible and accessible */
+  .side-close-btn {
+    display: grid !important;
+    place-items: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+    background: var(--hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    flex-shrink: 0 !important;
+    margin-left: 8px !important;
+    z-index: 10 !important;
+  }
+  .side-drag-handle {
+    display: block !important;
+    width: 40px !important;
+    height: 4px !important;
+    background: var(--border) !important;
+    border-radius: 2px !important;
+    margin: 8px auto 2px !important;
+  }
+  .side-header {
+    height: 44px !important;
+    padding: 0 8px 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: var(--panel) !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+  }
+  .side .tabs {
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .side .tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+  .side .tabs button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Bottom Panel Close Button and Header */
+  .bottom-close-btn {
+    display: grid !important;
+    place-items: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    border-radius: 50% !important;
+    background: var(--hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    flex-shrink: 0 !important;
+    margin-left: 6px !important;
+    margin-right: 4px !important;
+    z-index: 10 !important;
+  }
+  .bottom.collapsed .bottom-close-btn {
+    display: none !important;
+  }
+  .bottom-drag-handle {
+    display: block !important;
+    width: 44px !important;
+    height: 4px !important;
+    background: var(--border) !important;
+    border-radius: 2px !important;
+    margin: 6px auto 2px !important;
+    cursor: pointer !important;
+  }
+  #bottomTabs {
+    display: flex !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 0 4px !important;
+  }
+  #bottomTabs::-webkit-scrollbar {
+    display: none !important;
+  }
+  #bottomTabs button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    height: 32px !important;
+    font-size: 12px !important;
+  }
+
+  /* Drawbar Close Button */
+  .drawbar-close-btn {
+    display: grid !important;
+    place-items: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 8px !important;
+    background: var(--hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    margin: 6px auto 8px !important;
+  }
+
+  /* Floating Drawing Button (Pencil on phone) */
+  .mobile-draw-toggle {
+    display: grid !important;
+    place-items: center !important;
+    position: fixed !important;
+    left: 14px !important;
+    bottom: 64px !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    background: var(--panel) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5) !important;
+    color: var(--text) !important;
+    z-index: 50 !important;
+    cursor: pointer !important;
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s !important;
+  }
+  .mobile-draw-toggle.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 6px 20px rgba(41, 98, 255, 0.6) !important;
+  }
+
+  /* Mobile compact topbar - elegant and balanced */
+  .topbar {
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 0 8px !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+  #symbolBtn {
+    height: 32px !important;
+    max-width: 125px !important;
+    padding: 0 8px !important;
+    gap: 4px !important;
+    border-radius: 6px !important;
+    background: var(--hover) !important;
+    flex-shrink: 0 !important;
+  }
+  #symbolLabel {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  #compareBtn,
+  #replayBtn,
+  #undoBtn,
+  #redoBtn,
+  #snapBtn,
+  #layoutSel,
+  .sync-check,
+  #sideToggleBtn,
+  #tfCustom,
+  .tb-badge,
+  .symbol-btn .ex-badge,
+  .topbar .sep,
+  .topbar #status,
+  #csvBtn {
+    display: none !important;
+  }
+  #tfButtons {
+    display: flex !important;
+    gap: 2px !important;
+    flex-shrink: 0 !important;
+  }
+  #tfButtons button:not(.active):nth-child(n+3) {
+    display: none !important;
+  }
+  #tfButtons button {
+    height: 30px !important;
+    min-width: 28px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+  }
+  .chart-type-wrap select,
+  #chartType {
+    height: 30px !important;
+    padding: 0 6px !important;
+    font-size: 12px !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  #indicatorsBtn {
+    height: 30px !important;
+    padding: 0 8px !important;
+    gap: 4px !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  #indicatorsBtn .label {
+    display: none !important;
+  }
+  #alertBtn {
+    height: 30px !important;
+    width: 30px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  #alertBtn span {
+    display: none !important;
+  }
+  #fullscreenBtn {
+    height: 30px !important;
+    width: 30px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  #themeBtn {
+    height: 30px !important;
+    width: 30px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: auto !important;
+  }
+
+  /* Sheet close button */
+  .sheet-close {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+    background: var(--hover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    display: grid !important;
+    place-items: center !important;
+    cursor: pointer !important;
+  }
+  .sheet-close svg {
+    stroke: currentColor;
+    fill: none;
+  }
+
   /* Mobile compact topbar */
   .tb-group.hide-mobile,
   .tb-btn.hide-mobile {

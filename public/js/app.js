@@ -27,6 +27,72 @@ const DEFAULT_WATCHLISTS = {
 };
 
 class App {
+  closeSheet() {
+    const sheet = $('#mobileMenuSheet');
+    if (!sheet) return;
+    sheet.classList.remove('open');
+    setTimeout(() => {
+      sheet.classList.add('hidden');
+    }, 260);
+    if (this.mobileTab === 'menu') {
+      this.mobileTab = 'chart';
+      document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.tab === 'chart');
+      });
+    }
+  }
+
+  closeSide() {
+    this.toggleSide(false);
+    if (this.mobileTab === 'watchlist' || this.mobileTab === 'news') {
+      this.mobileTab = 'chart';
+      document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.tab === 'chart');
+      });
+      this.syncRightDock?.();
+    }
+  }
+
+  closeBottom() {
+    $('#bottom')?.classList.add('collapsed');
+    if (this.mobileTab === 'explore') {
+      this.mobileTab = 'chart';
+      document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.tab === 'chart');
+      });
+    }
+  }
+
+  // Touch swipe-down closes/collapses bottom panel on mobile
+  _initBottomSwipe(bottomEl) {
+    if (!bottomEl) return;
+    let startY = 0;
+    let isDragging = false;
+    bottomEl.addEventListener('touchstart', (e) => {
+      if (!e.target.closest('#bottomTabs') && !e.target.closest('#bottomDragHandle')) return;
+      startY = e.touches[0].clientY;
+      isDragging = true;
+    }, { passive: true });
+    bottomEl.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 0 && !bottomEl.classList.contains('collapsed')) {
+        bottomEl.style.transition = 'none';
+        bottomEl.style.transform = `translateY(${dy}px)`;
+      }
+    }, { passive: true });
+    bottomEl.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const dy = e.changedTouches[0].clientY - startY;
+      bottomEl.style.transition = '';
+      bottomEl.style.transform = '';
+      if (dy > 60) {
+        this.closeBottom();
+      }
+    }, { passive: true });
+  }
+
   constructor() {
     this.panes = [];
     this.active = null;
@@ -317,32 +383,56 @@ class App {
   }
 
   setMobileTab(tab) {
+    const sheet = $('#mobileMenuSheet');
+    const bottomEl = $('#bottom');
+    const drawbar = $('#drawbar');
+    drawbar?.classList.remove('open');
+    $('#mobileDrawToggle')?.classList.remove('active');
+
+    // Toggle behavior: if tapping already-active tab, close it and return to chart
+    if (this.mobileTab === tab && tab !== 'chart') {
+      if (tab === 'watchlist' || tab === 'news') {
+        this.toggleSide(false);
+      } else if (tab === 'explore') {
+        bottomEl?.classList.add('collapsed');
+      } else if (tab === 'menu') {
+        this.closeSheet();
+      }
+      this.mobileTab = 'chart';
+      document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.tab === 'chart');
+      });
+      this.syncRightDock();
+      return;
+    }
+
     this.mobileTab = tab;
     document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
       b.classList.toggle('active', b.dataset.tab === tab);
     });
-    const sheet = $('#mobileMenuSheet');
-    const bottomEl = $('#bottom');
+
     if (tab === 'chart') {
       this.toggleSide(false);
       bottomEl?.classList.add('collapsed');
       if (sheet) {
-        sheet.classList.add('hidden');
         sheet.classList.remove('open');
+        setTimeout(() => sheet.classList.add('hidden'), 250);
       }
     } else if (tab === 'watchlist') {
-      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
+      if (sheet) { sheet.classList.remove('open'); sheet.classList.add('hidden'); }
+      bottomEl?.classList.add('collapsed');
       this.panels?.showSide('watchlist');
       this.toggleSide(true);
     } else if (tab === 'explore') {
-      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
+      if (sheet) { sheet.classList.remove('open'); sheet.classList.add('hidden'); }
       this.toggleSide(false);
       this.panels?.showBottom('screener');
       if (bottomEl) {
         bottomEl.classList.remove('collapsed');
       }
     } else if (tab === 'news') {
-      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
+      if (sheet) { sheet.classList.remove('open'); sheet.classList.add('hidden'); }
+      bottomEl?.classList.add('collapsed');
       this.panels?.showSide('news');
       this.toggleSide(true);
     } else if (tab === 'menu') {
@@ -677,8 +767,31 @@ class App {
     const sideToggleBtn = $("#sideToggleBtn");
     if (sideToggleBtn) sideToggleBtn.onclick = () => toggleSide();
     const sideCloseBtn = $("#sideCloseBtn");
-    if (sideCloseBtn) sideCloseBtn.onclick = () => toggleSide(false);
-    if (backdropEl) backdropEl.onclick = () => toggleSide(false);
+    if (sideCloseBtn) {
+      sideCloseBtn.onclick = () => this.closeSide();
+    }
+    if (backdropEl) {
+      backdropEl.onclick = () => this.closeSide();
+    }
+
+    const bottomCloseBtn = $("#bottomCloseBtn");
+    if (bottomCloseBtn) {
+      bottomCloseBtn.onclick = () => this.closeBottom();
+    }
+
+    const sheetCloseBtn = $("#sheetCloseBtn");
+    if (sheetCloseBtn) {
+      sheetCloseBtn.onclick = () => this.closeSheet();
+    }
+    const sheetBackdrop = $("#sheetBackdrop");
+    if (sheetBackdrop) {
+      sheetBackdrop.onclick = () => this.closeSheet();
+    }
+
+    // Initialize touch swipe gestures for mobile sheets
+    this._initSheetSwipe($('#mobileMenuSheet'));
+    this._initSideSwipe($('.side'));
+    this._initBottomSwipe($('#bottom'));
 
     // Right vertical dock
     const rightDock = $("#rightDock");
@@ -716,7 +829,7 @@ class App {
         const actBtn = e.target.closest('[data-action]');
         if (!actBtn) return;
         const act = actBtn.dataset.action;
-        closeSheet();
+        this.closeSheet();
         const doAction = () => {
           if (act === 'theme') this.toggleTheme();
           else if (act === 'settings') this.openSettings();
@@ -809,6 +922,7 @@ class App {
     const bar = $("#drawbar");
     if (!bar) return;
     bar.innerHTML =
+      '<button class="drawbar-close-btn mobile-only" id="drawbarCloseBtn" title="Close Tools"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
       TOOLS.map(
         (t, i) =>
           `${i === 1 ? "<hr>" : ""}<button data-tool="${t.id}" title="${t.label}"><svg viewBox="0 0 24 24">${t.icon}</svg></button>`,
@@ -822,6 +936,11 @@ class App {
     bar.onclick = (e) => {
       const b = e.target.closest("button");
       if (!b) return;
+      if (b.id === "drawbarCloseBtn" || b.classList.contains("drawbar-close-btn")) {
+        bar.classList.remove("open");
+        $("#mobileDrawToggle")?.classList.remove("active");
+        return;
+      }
       if (b.dataset.tool) {
         this.setTool(this.tool === b.dataset.tool ? "cursor" : b.dataset.tool);
         if (window.innerWidth <= 768) {
