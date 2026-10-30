@@ -53,10 +53,7 @@ class App {
           symbol: "BINANCE:BTCUSDT",
           tf: "1D",
           type: "candles",
-          indicators: [
-            { uid: newUid(), id: "ema", params: { length: 21 } },
-            { uid: newUid(), id: "rsi", params: {} },
-          ],
+          indicators: [],
         },
       ],
       watchlists: DEFAULT_WATCHLISTS,
@@ -127,6 +124,16 @@ class App {
       if (p.cfg.symbol === symbol && p.drawings.items !== items)
         p.drawings.setItems(this.getDrawings(symbol));
     this.persist();
+  }
+
+  
+  clearAllIndicators() {
+    for (const p of this.panes) {
+      p.cfg.indicators = [];
+      p.render(false);
+    }
+    this.persist();
+    this.toast("All indicators turned off");
   }
 
   undoDrawing() {
@@ -493,6 +500,13 @@ class App {
       if (menuSettingsBtn) {
         menuSettingsBtn.onclick = () => {
           this.openSettings();
+          tvMenuDropdown.classList.add("hidden");
+        };
+      }
+      const menuClearIndicators = $("#menuClearIndicators");
+      if (menuClearIndicators) {
+        menuClearIndicators.onclick = () => {
+          this.clearAllIndicators();
           tvMenuDropdown.classList.add("hidden");
         };
       }
