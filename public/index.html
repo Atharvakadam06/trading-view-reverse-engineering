@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Quant Terminal</title>
+    <title>TradingView — Free Stock Charts, Stock Quotes and Trade Ideas</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232962ff'/%3E%3Cpath d='M7 21l6-7 5 4 7-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
@@ -12,144 +12,333 @@
     <link rel="stylesheet" href="/css/app.css" />
   </head>
   <body>
+    <!-- Topbar: Exact TradingView Desktop & Mobile Header -->
     <header class="topbar">
-      <div class="brand" title="Quant Terminal">
-        <svg viewBox="0 0 32 32" width="22" height="22">
-          <rect width="32" height="32" rx="7" fill="var(--accent)" />
-          <path
-            d="M7 21l6-7 5 4 7-9"
-            stroke="#fff"
-            stroke-width="3"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+      <!-- TV Hamburger / Logo menu -->
+      <div class="tv-menu-wrap">
+        <button id="tvMenuBtn" class="tb icon tv-logo-btn" title="Main menu">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div id="tvMenuDropdown" class="tv-menu-dropdown hidden">
+          <div class="tv-menu-item" id="menuThemeBtn">
+            <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg>
+            <span>Toggle Dark/Light Mode</span>
+          </div>
+          <div class="tv-menu-item" id="menuSettingsBtn">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+            <span>Chart Properties</span>
+          </div>
+          <div class="tv-menu-item" id="menuClearDrawings">
+            <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            <span>Remove All Drawings</span>
+          </div>
+          <div class="tv-menu-sep"></div>
+          <div class="tv-menu-item" id="menuExportCsv">
+            <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+            <span>Export Chart Data (CSV)</span>
+          </div>
+          <a class="tv-menu-item" href="https://part-timequant.com/tradingview/help" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 17h.01M12 14a2 2 0 1 0-2-2"/></svg>
+            <span>Help Center</span>
+          </a>
+        </div>
       </div>
-      <button
-        id="symbolBtn"
-        class="tb symbol-btn"
-        title="Change symbol (or just start typing)"
-      >
+
+      <!-- Symbol Search Button (TV Style) -->
+      <button id="symbolBtn" class="tb symbol-btn" title="Symbol Search (or start typing)">
+        <svg viewBox="0 0 24 24" width="15" height="15" class="search-icon">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
         <span id="symbolLabel">BTCUSDT</span>
+        <span id="symbolExBadge" class="ex-badge">BINANCE</span>
+        <svg viewBox="0 0 24 24" width="12" height="12" class="chevron-down">
+          <path d="M6 9l6 6 6-6" stroke-width="2"/>
+        </svg>
       </button>
+
+      <!-- Compare (+) Button -->
+      <button id="compareBtn" class="tb icon compare-btn" title="Compare or Add Symbol">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M12 5v14M5 12h14" stroke-width="2"/>
+        </svg>
+      </button>
+
       <div class="sep"></div>
+
+      <!-- Timeframe Group -->
       <div id="tfButtons" class="tf-group"></div>
       <input
         id="tfCustom"
         class="tf-custom"
         placeholder="7m"
-        title="Any timeframe: 1s, 7m, 2h, 3D, 2W, 3M"
+        title="Custom timeframe: 1s, 7m, 2h, 3D, 2W"
         size="4"
       />
+
       <div class="sep"></div>
-      <select id="chartType" class="tb" title="Chart type"></select>
-      <button id="indicatorsBtn" class="tb" title="Indicators">
-        <svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8 3 3" /></svg
-        ><span>Indicators</span>
+
+      <!-- Chart Type Dropdown -->
+      <div class="chart-type-wrap">
+        <select id="chartType" class="tb" title="Chart Type"></select>
+      </div>
+
+      <!-- Indicators fx Button (Authentic TV fx style) -->
+      <button id="indicatorsBtn" class="tb indicators-btn" title="Indicators, Metrics & Strategies">
+        <span class="fx-badge">fx</span>
+        <span class="label">Indicators</span>
       </button>
-      <button id="compareBtn" class="tb" title="Compare symbols">
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="8" />
-          <path d="M12 6v12M6 12h12" /></svg
-        ><span>Compare</span>
-      </button>
+
       <div class="sep"></div>
-      <select id="layoutSel" class="tb" title="Chart layout">
-        <option value="1">1 chart</option>
-        <option value="2v">2 side by side</option>
-        <option value="2h">2 stacked</option>
-        <option value="3">3 charts</option>
-        <option value="4">4 charts</option>
-        <option value="6">6 charts</option>
-        <option value="8">8 charts</option>
-        <option value="16">16 charts</option>
-      </select>
-      <label class="tb check" title="Change the symbol on every chart at once"
-        ><input type="checkbox" id="syncSymbol" /> Sync</label
-      >
-      <button id="replayBtn" class="tb" title="Bar replay">
-        <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4" /></svg
-        ><span>Replay</span>
-      </button>
-      <button id="alertBtn" class="tb" title="Create alert">
-        <svg viewBox="0 0 24 24">
-          <path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20h4" /></svg
-        ><span>Alert</span>
-      </button>
-      <button id="sideToggleBtn" class="tb" title="Watchlist & Side panel">
+
+      <!-- Alert Button -->
+      <button id="alertBtn" class="tb alert-btn" title="Create Alert (Alt+A)">
         <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3 2"/>
         </svg>
-        <span>Watchlist</span>
+        <span>Alert</span>
       </button>
+
+      <!-- Bar Replay Button -->
+      <button id="replayBtn" class="tb replay-btn" title="Bar Replay">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/>
+          <path d="M12 9l-3 3 3 3"/>
+        </svg>
+        <span>Replay</span>
+      </button>
+
+      <div class="sep"></div>
+
+      <!-- Undo / Redo -->
+      <button id="undoBtn" class="tb icon undo-btn" title="Undo (Ctrl+Z)">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-2"/>
+        </svg>
+      </button>
+      <button id="redoBtn" class="tb icon redo-btn" title="Redo (Ctrl+Y)">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M15 14l5-5-5-5"/><path d="M20 9H9a6 6 0 0 0 0 12h2"/>
+        </svg>
+      </button>
+
       <div class="spacer"></div>
-      <a
-        class="tb"
-        href="https://part-timequant.com/tradingview/help"
-        target="_blank"
-        rel="noopener"
-        title="What's new, how to update, and common questions"
-        >Help</a
-      >
-      <button id="logBtn" class="tb" title="Logarithmic price scale">
-        Log
-      </button>
-      <button id="snapBtn" class="tb icon" title="Download chart image">
-        <svg viewBox="0 0 24 24">
-          <rect x="3" y="6" width="18" height="14" rx="2" />
-          <circle cx="12" cy="13" r="3.5" />
-          <path d="M8 6l2-3h4l2 3" />
-        </svg>
-      </button>
-      <button id="csvBtn" class="tb icon" title="Export chart data (CSV)">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-        </svg>
-      </button>
-      <button id="settingsBtn" class="tb icon" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
-      <button id="themeBtn" class="tb icon" title="Light / dark">
-        <svg viewBox="0 0 24 24">
-          <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
-        </svg>
-      </button>
-      <span id="status" class="status" title="Data status"></span>
+
+      <!-- Right Toolbar Controls -->
+      <div class="topbar-right">
+        <!-- Layout Split Selector -->
+        <select id="layoutSel" class="tb layout-sel" title="Chart Layout">
+          <option value="1">1 Chart</option>
+          <option value="2v">2 Side-by-Side</option>
+          <option value="2h">2 Stacked</option>
+          <option value="3">3 Charts</option>
+          <option value="4">4 Charts (2x2)</option>
+          <option value="6">6 Charts</option>
+          <option value="8">8 Charts</option>
+          <option value="16">16 Charts</option>
+        </select>
+
+        <label class="tb check sync-check" title="Sync symbol across charts">
+          <input type="checkbox" id="syncSymbol" />
+          <span>Sync</span>
+        </label>
+
+        <!-- Chart Settings Gear -->
+        <button id="settingsBtn" class="tb icon" title="Chart Settings">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+          </svg>
+        </button>
+
+        <!-- Fullscreen Button -->
+        <button id="fullscreenBtn" class="tb icon" title="Fullscreen Mode (F11)">
+          <svg viewBox="0 0 24 24">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+
+        <!-- Snapshot Camera -->
+        <button id="snapBtn" class="tb icon" title="Take a snapshot">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="6" width="18" height="14" rx="2"/>
+            <circle cx="12" cy="13" r="3.5"/>
+            <path d="M8 6l2-3h4l2 3"/>
+          </svg>
+        </button>
+
+        <!-- Hidden CSV Button preserved for export -->
+        <button id="csvBtn" class="hidden" title="Export CSV"></button>
+
+        <!-- Theme Toggle -->
+        <button id="themeBtn" class="tb icon" title="Theme (Dark / Light)">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+          </svg>
+        </button>
+
+        <!-- Mobile Side Toggle Button (Used by mobile header) -->
+        <button id="sideToggleBtn" class="tb icon mobile-only" title="Watchlist">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+
+        <span id="status" class="status" title="Data feed status"></span>
+      </div>
     </header>
 
+    <!-- Main Workspace -->
     <div class="main">
+      <!-- Left Drawing Toolbar (TradingView Dock) -->
       <nav class="drawbar" id="drawbar"></nav>
+
+      <!-- Center Chart Workspace -->
       <section class="center">
+        <!-- Chart Grid -->
         <div id="grid" class="grid"></div>
+
+        <!-- TradingView Date Range Bar & Quick Scales -->
+        <div class="range-bar" id="rangeBar">
+          <div class="range-buttons">
+            <button class="range-btn" data-range="1D">1D</button>
+            <button class="range-btn" data-range="5D">5D</button>
+            <button class="range-btn" data-range="1M">1M</button>
+            <button class="range-btn" data-range="3M">3M</button>
+            <button class="range-btn" data-range="6M">6M</button>
+            <button class="range-btn" data-range="YTD">YTD</button>
+            <button class="range-btn active" data-range="1Y">1Y</button>
+            <button class="range-btn" data-range="5Y">5Y</button>
+            <button class="range-btn" data-range="ALL">ALL</button>
+          </div>
+          <div class="range-scales">
+            <button id="pctBtn" class="scale-btn" title="Percentage scale">%</button>
+            <button id="logBtn" class="scale-btn" title="Logarithmic price scale">log</button>
+            <button id="autoBtn" class="scale-btn active" title="Auto fit scale">auto</button>
+          </div>
+        </div>
+
+        <!-- Floating Mobile Drawing Toggle (Pencil in bottom-left corner on phones) -->
+        <button id="mobileDrawToggle" class="mobile-draw-toggle mobile-only" title="Toggle Drawing Tools">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+
+        <!-- Bottom Panel: Strategy Tester, Screener, Heatmap, Paper Trading, Pine Editor -->
         <div id="bottom" class="bottom collapsed">
           <div class="tabs" id="bottomTabs">
-            <button data-tab="tester" class="active">Strategy tester</button>
+            <button data-tab="tester" class="active">Strategy Tester</button>
             <button data-tab="screener">Screener</button>
             <button data-tab="heatmap">Heatmap</button>
             <button data-tab="seasonals">Seasonals</button>
             <button data-tab="financials">Financials</button>
-            <button data-tab="paper">Paper trading</button>
-            <button data-tab="editor">Indicator editor</button>
+            <button data-tab="paper">Paper Trading</button>
+            <button data-tab="editor">Pine / Editor</button>
             <button data-tab="ptq">PTQ</button>
             <div class="spacer"></div>
-            <button id="bottomToggle" class="icon" title="Show / hide panel">
+            <button id="bottomToggle" class="icon" title="Maximize / Minimize Panel">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" /></svg>
             </button>
           </div>
           <div class="tab-body" id="bottomBody"></div>
         </div>
       </section>
-      <aside class="side">
-        <div class="tabs" id="sideTabs">
-          <button data-tab="watchlist" class="active">Watchlist</button>
-          <button data-tab="alerts">Alerts</button>
-          <button data-tab="calendar">Calendar</button>
-          <button data-tab="news">News</button>
-          <button id="sideCloseBtn" class="side-close-btn" title="Close panel">&times;</button>
+
+      <!-- Side Panel: Watchlist, Alerts, Calendar, News -->
+      <aside class="side" id="sidePanel">
+        <div class="side-header">
+          <div class="tabs" id="sideTabs">
+            <button data-tab="watchlist" class="active">Watchlist</button>
+            <button data-tab="alerts">Alerts</button>
+            <button data-tab="calendar">Calendar</button>
+            <button data-tab="news">News</button>
+          </div>
+          <button id="sideCloseBtn" class="side-close-btn" title="Close Panel">&times;</button>
         </div>
         <div class="tab-body" id="sideBody"></div>
       </aside>
+
+      <!-- Right Vertical Dock (TradingView Desktop Style Strip) -->
+      <nav class="right-dock" id="rightDock">
+        <button class="dock-btn active" data-dock="watchlist" title="Watchlist & details">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18M3 6h.01M3 12h.01M3 18h.01" stroke-width="2.2"/></svg>
+        </button>
+        <button class="dock-btn" data-dock="alerts" title="Alerts">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+        </button>
+        <button class="dock-btn" data-dock="calendar" title="Economic calendar">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </button>
+        <button class="dock-btn" data-dock="news" title="Market news">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+        </button>
+      </nav>
     </div>
 
+    <!-- Mobile Bottom Navigation Bar (TradingView Mobile App Signature Navigation) -->
+    <nav class="mobile-nav" id="mobileNav">
+      <button class="m-nav-btn active" data-mnav="chart">
+        <svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-7 4 4 6-10" stroke-width="2"/><circle cx="19" cy="3" r="1.5"/></svg>
+        <span>Chart</span>
+      </button>
+      <button class="m-nav-btn" data-mnav="watchlist">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-width="2.2"/></svg>
+        <span>Watchlist</span>
+      </button>
+      <button class="m-nav-btn" data-mnav="explore">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="3"/></svg>
+        <span>Explore</span>
+      </button>
+      <button class="m-nav-btn" data-mnav="news">
+        <svg viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m4 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9"/></svg>
+        <span>News</span>
+      </button>
+      <button class="m-nav-btn" data-mnav="menu">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="18" r="1.5"/></svg>
+        <span>Menu</span>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu Bottom Sheet Modal -->
+    <div id="mobileMenuSheet" class="mobile-sheet hidden">
+      <div class="sheet-backdrop" id="sheetBackdrop"></div>
+      <div class="sheet-content">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3>Menu & Features</h3>
+          <button class="sheet-close" id="sheetCloseBtn">&times;</button>
+        </div>
+        <div class="sheet-grid">
+          <div class="sheet-card" data-sheet-act="paper">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Paper Trading</span>
+          </div>
+          <div class="sheet-card" data-sheet-act="tester">
+            <svg viewBox="0 0 24 24"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"/></svg>
+            <span>Strategy Tester</span>
+          </div>
+          <div class="sheet-card" data-sheet-act="editor">
+            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span>Pine Editor</span>
+          </div>
+          <div class="sheet-card" data-sheet-act="settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+            <span>Settings</span>
+          </div>
+          <div class="sheet-card" data-sheet-act="theme">
+            <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg>
+            <span>Theme Toggle</span>
+          </div>
+          <div class="sheet-card" data-sheet-act="clear">
+            <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            <span>Clear Drawings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop for side panel and modals -->
     <div id="sideBackdrop" class="side-backdrop"></div>
     <div id="modal" class="modal hidden">
       <div class="modal-card" id="modalCard"></div>

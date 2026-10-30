@@ -34,6 +34,9 @@ class App {
     this.prices = {};
     this.priceListeners = new Set();
     this.saveTimer = null;
+    this.undoStack = {};
+    this.redoStack = {};
+    this.mobileTab = "chart";
   }
 
   async init() {
@@ -103,7 +106,13 @@ class App {
   getDrawings(symbol) {
     return structuredClone(this.state.drawings[symbol] || []);
   }
-  saveDrawings(symbol, items) {
+  saveDrawings(symbol, items, pushUndo = true) {
+    if (pushUndo) {
+      if (!this.undoStack[symbol]) this.undoStack[symbol] = [];
+      this.undoStack[symbol].push(this.getDrawings(symbol));
+      if (this.undoStack[symbol].length > 40) this.undoStack[symbol].shift();
+      this.redoStack[symbol] = [];
+    }
     this.state.drawings[symbol] = items.map(
       ({ id, type, points, text, color, rr }) => ({
         id,
@@ -119,6 +128,110 @@ class App {
         p.drawings.setItems(this.getDrawings(symbol));
     this.persist();
   }
+
+  undoDrawing() {
+    const sym = this.active?.cfg.symbol;
+    if (!sym || !this.undoStack[sym]?.length) {
+      this.toast("Nothing to undo");
+      return;
+    }
+    if (!this.redoStack[sym]) this.redoStack[sym] = [];
+    this.redoStack[sym].push(this.getDrawings(sym));
+    const prev = this.undoStack[sym].pop();
+    this.saveDrawings(sym, prev, false);
+    for (const p of this.panes)
+      if (p.cfg.symbol === sym) p.drawings.setItems(this.getDrawings(sym));
+    this.toast("Drawing undone");
+  }
+
+  redoDrawing() {
+    const sym = this.active?.cfg.symbol;
+    if (!sym || !this.redoStack[sym]?.length) {
+      this.toast("Nothing to redo");
+      return;
+    }
+    if (!this.undoStack[sym]) this.undoStack[sym] = [];
+    this.undoStack[sym].push(this.getDrawings(sym));
+    const next = this.redoStack[sym].pop();
+    this.saveDrawings(sym, next, false);
+    for (const p of this.panes)
+      if (p.cfg.symbol === sym) p.drawings.setItems(this.getDrawings(sym));
+    this.toast("Drawing redone");
+  }
+
+  setTimeRange(range) {
+    if (!this.active?.chart || !this.active?.shown?.length) return;
+    document.querySelectorAll("#rangeBar .range-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.range === range);
+    });
+    if (range === "ALL") {
+      this.active.chart.timeScale().fitContent();
+      return;
+    }
+    const nowSec = Math.floor(Date.now() / 1000);
+    const D = 86400;
+    const offsets = {
+      "1D": D,
+      "5D": 5 * D,
+      "1M": 30 * D,
+      "3M": 90 * D,
+      "6M": 180 * D,
+      "YTD": nowSec - Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000),
+      "1Y": 365 * D,
+      "5Y": 5 * 365 * D,
+    };
+    const diff = offsets[range] || (30 * D);
+    const startSec = nowSec - diff;
+    const shown = this.active.shown;
+    let idx = shown.findIndex((b) => {
+      const t = typeof b.time === "number" ? b.time : (b.time?.timestamp || 0);
+      return t >= startSec;
+    });
+    if (idx === -1) idx = 0;
+    this.active.chart.timeScale().setVisibleLogicalRange({
+      from: idx,
+      to: shown.length + 5,
+    });
+  }
+
+  syncRightDock() {
+    const sideEl = $(".side");
+    const isOpen = sideEl?.classList.contains("open");
+    const currentTab = this.panels?.getSideTab?.() || "watchlist";
+    document.querySelectorAll("#rightDock .dock-btn").forEach((b) => {
+      b.classList.toggle("active", isOpen && b.dataset.dock === currentTab);
+    });
+  }
+
+  setMobileTab(tab) {
+    this.mobileTab = tab;
+    document.querySelectorAll("#mobileNav [data-tab]").forEach((b) => {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    const sheet = $("#mobileMenuSheet");
+    const bottomEl = $("#bottom");
+    if (tab === "chart") {
+      this.toggleSide(false);
+      bottomEl?.classList.add("collapsed");
+      sheet?.classList.add("hidden");
+    } else if (tab === "watchlist") {
+      sheet?.classList.add("hidden");
+      this.panels?.showSide("watchlist");
+      this.toggleSide(true);
+    } else if (tab === "explore") {
+      sheet?.classList.add("hidden");
+      this.toggleSide(false);
+      this.panels?.showBottom("screener");
+    } else if (tab === "news") {
+      sheet?.classList.add("hidden");
+      this.panels?.showSide("news");
+      this.toggleSide(true);
+    } else if (tab === "menu") {
+      sheet?.classList.remove("hidden");
+    }
+    this.syncRightDock();
+  }
+
 
   // ---------- custom indicators ----------
   async loadCustomIndicators() {
@@ -219,115 +332,345 @@ class App {
   }
 
   // ---------- toolbar ----------
-  buildToolbar() {
+    buildToolbar() {
     const tfBox = $("#tfButtons");
-    tfBox.innerHTML = TF_QUICK.map(
-      (t) => `<button data-tf="${t}">${t}</button>`,
-    ).join("");
-    tfBox.onclick = (e) => {
-      const tf = e.target.dataset.tf;
-      if (tf) this.setTf(tf);
-    };
-    $("#tfCustom").onkeydown = (e) => {
-      if (e.key !== "Enter") return;
-      const v = e.target.value
-        .trim()
-        .replace(/^(\d+)d$/i, "$1D")
-        .replace(/^(\d+)w$/i, "$1W");
-      try {
-        parseTf(v);
-        this.setTf(v);
-        e.target.value = "";
-        e.target.blur();
-      } catch (err) {
-        this.toast(err.message, "err");
-      }
-    };
-    $("#chartType").innerHTML = CHART_TYPES.map(
-      ([v, l]) => `<option value="${v}">${l}</option>`,
-    ).join("");
-    $("#chartType").onchange = (e) => {
-      this.active.cfg.type = e.target.value;
-      this.active.render(true);
-      this.persist();
-    };
-    $("#symbolBtn").onclick = () => this.openSymbolSearch();
-    $("#indicatorsBtn").onclick = () => this.openIndicatorPicker();
-    $("#compareBtn").onclick = () =>
-      this.openSymbolSearch(
-        "",
-        (sym) => {
-          this.active.cfg.compare.push(sym);
-          this.persist();
-          this.active.load({ keepView: true });
-        },
-        "Compare withâ€¦",
-      );
-    $("#layoutSel").onchange = (e) => this.setLayout(e.target.value);
-    $("#syncSymbol").checked = !!this.settings.syncSymbol;
-    $("#syncSymbol").onchange = (e) => {
-      this.settings.syncSymbol = e.target.checked;
-      this.persist();
-    };
-    $("#replayBtn").onclick = () => {
-      if (this.active.replay) return this.active.stopReplay();
-      this.setTool("replay-pick");
-      this.toast("Click the bar you want replay to start from.");
-    };
-    $("#alertBtn").onclick = () => this.panels.openAlertDialog();
-    $("#logBtn").onclick = () => {
-      this.active.cfg.log = !this.active.cfg.log;
-      this.active.render(false);
-      this.syncToolbar();
-      this.persist();
-    };
-    $("#snapBtn").onclick = () =>
-      this.active
-        .screenshot()
-        .toBlob((b) =>
-          download(
-            `${ticker(this.active.cfg.symbol)}-${this.active.cfg.tf}.png`,
-            b,
-          ),
+    if (tfBox) {
+      tfBox.innerHTML = TF_QUICK.map(
+        (t) => `<button data-tf="${t}">${t}</button>`,
+      ).join("");
+      tfBox.onclick = (e) => {
+        const tf = e.target.dataset.tf;
+        if (tf) this.setTf(tf);
+      };
+    }
+    const tfCustom = $("#tfCustom");
+    if (tfCustom) {
+      tfCustom.onkeydown = (e) => {
+        if (e.key !== "Enter") return;
+        const v = e.target.value
+          .trim()
+          .replace(/^(\d+)d$/i, "$1D")
+          .replace(/^(\d+)w$/i, "$1W");
+        try {
+          parseTf(v);
+          this.setTf(v);
+          e.target.value = "";
+          e.target.blur();
+        } catch (err) {
+          this.toast(err.message, "err");
+        }
+      };
+    }
+    const chartType = $("#chartType");
+    if (chartType) {
+      chartType.innerHTML = CHART_TYPES.map(
+        ([v, l]) => `<option value="${v}">${l}</option>`,
+      ).join("");
+      chartType.onchange = (e) => {
+        this.active.cfg.type = e.target.value;
+        this.active.render(true);
+        this.persist();
+      };
+    }
+    const symbolBtn = $("#symbolBtn");
+    if (symbolBtn) symbolBtn.onclick = () => this.openSymbolSearch();
+    const indBtn = $("#indicatorsBtn");
+    if (indBtn) indBtn.onclick = () => this.openIndicatorPicker();
+    const compBtn = $("#compareBtn");
+    if (compBtn) {
+      compBtn.onclick = () =>
+        this.openSymbolSearch(
+          "",
+          (sym) => {
+            this.active.cfg.compare.push(sym);
+            this.persist();
+            this.active.load({ keepView: true });
+          },
+          "Compare with…",
         );
-    $("#csvBtn").onclick = () => this.exportCsv();
-    $("#themeBtn").onclick = () => {
-      this.settings.theme = this.settings.theme === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = this.settings.theme;
-      this.panes.forEach((p) => p.applyTheme());
-      this.panels.onTheme?.();
-      this.persist();
-    };
-    $("#settingsBtn").onclick = () => this.openSettings();
+    }
+    const layoutSel = $("#layoutSel");
+    if (layoutSel) layoutSel.onchange = (e) => this.setLayout(e.target.value);
+    const syncSym = $("#syncSymbol");
+    if (syncSym) {
+      syncSym.checked = !!this.settings.syncSymbol;
+      syncSym.onchange = (e) => {
+        this.settings.syncSymbol = e.target.checked;
+        this.persist();
+      };
+    }
+    const replayBtn = $("#replayBtn");
+    if (replayBtn) {
+      replayBtn.onclick = () => {
+        if (this.active.replay) return this.active.stopReplay();
+        this.setTool("replay-pick");
+        this.toast("Click the bar you want replay to start from.");
+      };
+    }
+    const alertBtn = $("#alertBtn");
+    if (alertBtn) alertBtn.onclick = () => this.panels.openAlertDialog();
+    
+    // Scale buttons
+    const logBtn = $("#logBtn");
+    if (logBtn) {
+      logBtn.onclick = () => {
+        this.active.cfg.log = !this.active.cfg.log;
+        this.active.render(false);
+        this.syncToolbar();
+        this.persist();
+      };
+    }
+    const pctBtn = $("#pctBtn");
+    if (pctBtn) {
+      pctBtn.onclick = () => {
+        this.active.cfg.pct = !this.active.cfg.pct;
+        if (this.active.main?.priceScale) {
+          this.active.main.priceScale().applyOptions({
+            mode: this.active.cfg.pct ? 2 : 0,
+          });
+        }
+        this.syncToolbar();
+        this.persist();
+      };
+    }
+    const autoBtn = $("#autoBtn");
+    if (autoBtn) {
+      autoBtn.onclick = () => {
+        if (this.active.main?.priceScale) {
+          this.active.main.priceScale().applyOptions({ autoScale: true });
+        }
+        this.toast("Scale reset to auto");
+      };
+    }
+
+    // Range bar
+    const rangeBar = $("#rangeBar");
+    if (rangeBar) {
+      rangeBar.onclick = (e) => {
+        const btn = e.target.closest(".range-btn");
+        if (btn?.dataset.range) {
+          this.setTimeRange(btn.dataset.range);
+        }
+      };
+    }
+
+    // Undo / Redo
+    const undoBtn = $("#undoBtn");
+    if (undoBtn) undoBtn.onclick = () => this.undoDrawing();
+    const redoBtn = $("#redoBtn");
+    if (redoBtn) redoBtn.onclick = () => this.redoDrawing();
+
+    // Fullscreen
+    const fsBtn = $("#fullscreenBtn");
+    if (fsBtn) {
+      fsBtn.onclick = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      };
+    }
+
+    // TV Menu dropdown
+    const tvMenuBtn = $("#tvMenuBtn");
+    const tvMenuDropdown = $("#tvMenuDropdown");
+    if (tvMenuBtn && tvMenuDropdown) {
+      tvMenuBtn.onclick = (e) => {
+        e.stopPropagation();
+        tvMenuDropdown.classList.toggle("hidden");
+      };
+      document.addEventListener("click", (e) => {
+        if (!tvMenuBtn.contains(e.target) && !tvMenuDropdown.contains(e.target)) {
+          tvMenuDropdown.classList.add("hidden");
+        }
+      });
+      const menuThemeBtn = $("#menuThemeBtn");
+      if (menuThemeBtn) {
+        menuThemeBtn.onclick = () => {
+          this.toggleTheme();
+          tvMenuDropdown.classList.add("hidden");
+        };
+      }
+      const menuSettingsBtn = $("#menuSettingsBtn");
+      if (menuSettingsBtn) {
+        menuSettingsBtn.onclick = () => {
+          this.openSettings();
+          tvMenuDropdown.classList.add("hidden");
+        };
+      }
+      const menuClearDrawings = $("#menuClearDrawings");
+      if (menuClearDrawings) {
+        menuClearDrawings.onclick = () => {
+          this.active?.clearDrawings();
+          tvMenuDropdown.classList.add("hidden");
+        };
+      }
+      const menuExportCsv = $("#menuExportCsv");
+      if (menuExportCsv) {
+        menuExportCsv.onclick = () => {
+          this.exportCsv();
+          tvMenuDropdown.classList.add("hidden");
+        };
+      }
+    }
+
+    const snapBtn = $("#snapBtn");
+    if (snapBtn) {
+      snapBtn.onclick = () =>
+        this.active
+          .screenshot()
+          .toBlob((b) =>
+            download(
+              `${ticker(this.active.cfg.symbol)}-${this.active.cfg.tf}.png`,
+              b,
+            ),
+          );
+    }
+    const csvBtn = $("#csvBtn");
+    if (csvBtn) csvBtn.onclick = () => this.exportCsv();
+    const themeBtn = $("#themeBtn");
+    if (themeBtn) themeBtn.onclick = () => this.toggleTheme();
+    const settingsBtn = $("#settingsBtn");
+    if (settingsBtn) settingsBtn.onclick = () => this.openSettings();
+
+    // Side panel toggle & right dock
     const sideEl = $(".side");
     const backdropEl = $("#sideBackdrop");
     const toggleSide = (force) => {
       const isOpen = force !== undefined ? force : !sideEl?.classList.contains("open");
       sideEl?.classList.toggle("open", isOpen);
       backdropEl?.classList.toggle("open", isOpen);
+      this.syncRightDock();
+      setTimeout(() => window.dispatchEvent(new Event("resize")), 220);
     };
+    this.toggleSide = toggleSide;
+
     const sideToggleBtn = $("#sideToggleBtn");
     if (sideToggleBtn) sideToggleBtn.onclick = () => toggleSide();
     const sideCloseBtn = $("#sideCloseBtn");
     if (sideCloseBtn) sideCloseBtn.onclick = () => toggleSide(false);
     if (backdropEl) backdropEl.onclick = () => toggleSide(false);
-    this.toggleSide = toggleSide;
+
+    // Right vertical dock
+    const rightDock = $("#rightDock");
+    if (rightDock) {
+      rightDock.onclick = (e) => {
+        const btn = e.target.closest(".dock-btn");
+        if (!btn) return;
+        const dock = btn.dataset.dock;
+        const currentTab = this.panels.getSideTab();
+        const isOpen = sideEl?.classList.contains("open");
+        if (isOpen && currentTab === dock) {
+          toggleSide(false);
+        } else {
+          this.panels.showSide(dock);
+          toggleSide(true);
+        }
+      };
+    }
+
+    // Mobile 5-tab bottom navigation
+    const mobileNav = $("#mobileNav");
+    if (mobileNav) {
+      mobileNav.onclick = (e) => {
+        const btn = e.target.closest("[data-tab]");
+        if (!btn) return;
+        this.setMobileTab(btn.dataset.tab);
+      };
+    }
+
+    // Mobile drawing toggle button
+    const mobileDrawToggle = $("#mobileDrawToggle");
+    const drawbar = $("#drawbar");
+    if (mobileDrawToggle && drawbar) {
+      mobileDrawToggle.onclick = () => {
+        drawbar.classList.toggle("open");
+      };
+    }
+
+    // Mobile slide-up menu sheet
+    const sheet = $("#mobileMenuSheet");
+    const sheetCloseBtn = $("#sheetCloseBtn");
+    const sheetBackdrop = $("#sheetBackdrop") || sheet?.querySelector(".sheet-backdrop");
+    const closeSheet = () => {
+      sheet?.classList.add("hidden");
+      if (this.mobileTab === "menu") this.setMobileTab("chart");
+    };
+    if (sheetCloseBtn) sheetCloseBtn.onclick = closeSheet;
+    if (sheetBackdrop) sheetBackdrop.onclick = closeSheet;
+
+    const mobileSheet = $("#mobileMenuSheet");
+    if (mobileSheet) {
+      mobileSheet.onclick = (e) => {
+        const actBtn = e.target.closest("[data-action]");
+        if (!actBtn) return;
+        const act = actBtn.dataset.action;
+        closeSheet();
+        if (act === "theme") this.toggleTheme();
+        else if (act === "settings") this.openSettings();
+        else if (act === "tester") {
+          this.panels.showBottom("tester");
+          this.setMobileTab("chart");
+        } else if (act === "screener") {
+          this.panels.showBottom("screener");
+          this.setMobileTab("chart");
+        } else if (act === "paper") {
+          this.panels.showBottom("paper");
+          this.setMobileTab("chart");
+        } else if (act === "clear-drawings") {
+          this.active?.clearDrawings();
+        } else if (act === "fullscreen") {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      };
+    }
+
+    // Default desktop state: open watchlist on wide screens
+    if (window.innerWidth > 768 && sideEl && !sideEl.classList.contains("open")) {
+      sideEl.classList.add("open");
+      setTimeout(() => this.syncRightDock(), 50);
+    }
+  }
+
+  toggleTheme() {
+    this.settings.theme = this.settings.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = this.settings.theme;
+    this.panes.forEach((p) => p.applyTheme());
+    this.panels.onTheme?.();
+    this.persist();
   }
 
   syncToolbar() {
     const p = this.active;
     if (!p) return;
-    $("#symbolLabel").textContent = ticker(p.cfg.symbol);
-    $("#symbolBtn").title =
-      `${p.cfg.symbol} â€” change symbol (or just start typing)`;
+    const symLabel = $("#symbolLabel");
+    if (symLabel) symLabel.textContent = ticker(p.cfg.symbol);
+    const exBadge = $("#symbolExBadge");
+    if (exBadge) exBadge.textContent = exchange(p.cfg.symbol);
+    const symBtn = $("#symbolBtn");
+    if (symBtn) symBtn.title = `${p.cfg.symbol} — change symbol (or just start typing)`;
     document
       .querySelectorAll("#tfButtons button")
       .forEach((b) => b.classList.toggle("active", b.dataset.tf === p.cfg.tf));
-    $("#tfCustom").placeholder = TF_QUICK.includes(p.cfg.tf) ? "7m" : p.cfg.tf;
-    $("#tfCustom").classList.toggle("on", !TF_QUICK.includes(p.cfg.tf));
-    $("#chartType").value = p.cfg.type;
-    $("#logBtn").classList.toggle("on", !!p.cfg.log);
-    $("#replayBtn").classList.toggle("on", !!p.replay);
+    const tfCustom = $("#tfCustom");
+    if (tfCustom) {
+      tfCustom.placeholder = TF_QUICK.includes(p.cfg.tf) ? "7m" : p.cfg.tf;
+      tfCustom.classList.toggle("on", !TF_QUICK.includes(p.cfg.tf));
+    }
+    const chartType = $("#chartType");
+    if (chartType) chartType.value = p.cfg.type;
+    const logBtn = $("#logBtn");
+    if (logBtn) logBtn.classList.toggle("on", !!p.cfg.log);
+    const pctBtn = $("#pctBtn");
+    if (pctBtn) pctBtn.classList.toggle("on", !!p.cfg.pct);
+    const replayBtn = $("#replayBtn");
+    if (replayBtn) replayBtn.classList.toggle("on", !!p.replay);
+    this.syncRightDock();
   }
 
   setTf(tf) {
@@ -348,22 +691,41 @@ class App {
     this.persist();
   }
 
-  buildDrawbar() {
+    buildDrawbar() {
     const bar = $("#drawbar");
+    if (!bar) return;
     bar.innerHTML =
       TOOLS.map(
         (t, i) =>
           `${i === 1 ? "<hr>" : ""}<button data-tool="${t.id}" title="${t.label}"><svg viewBox="0 0 24 24">${t.icon}</svg></button>`,
       ).join("") +
-      '<hr><button data-act="alert" title="Alert when price crosses the selected line"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20h4"/></svg></button>' +
+      '<hr>' +
+      '<button data-act="alert" title="Alert when price crosses the selected line"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20h4"/></svg></button>' +
+      '<button data-act="lock" id="lockDrawingsBtn" title="Lock all drawing tools"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>' +
+      '<button data-act="hide" id="hideDrawingsBtn" title="Hide all drawings"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg></button>' +
       '<button data-act="delete" title="Delete selected drawing (Delete key)"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>' +
       '<button data-act="clear" title="Remove all drawings on this symbol"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button>';
     bar.onclick = (e) => {
       const b = e.target.closest("button");
       if (!b) return;
-      if (b.dataset.tool)
+      if (b.dataset.tool) {
         this.setTool(this.tool === b.dataset.tool ? "cursor" : b.dataset.tool);
+        if (window.innerWidth <= 768) {
+          bar.classList.remove("open");
+        }
+      }
       if (b.dataset.act === "alert") this.alertOnSelectedDrawing();
+      if (b.dataset.act === "lock") {
+        this.active.drawingsLocked = !this.active.drawingsLocked;
+        b.classList.toggle("active", !!this.active.drawingsLocked);
+        this.toast(this.active.drawingsLocked ? "Drawings locked" : "Drawings unlocked");
+      }
+      if (b.dataset.act === "hide") {
+        this.active.drawingsHidden = !this.active.drawingsHidden;
+        b.classList.toggle("active", !!this.active.drawingsHidden);
+        this.active.drawings.update();
+        this.toast(this.active.drawingsHidden ? "Drawings hidden" : "Drawings visible");
+      }
       if (b.dataset.act === "delete" && !this.active.deleteSelectedDrawing())
         this.toast("Click a drawing first to select it.");
       if (
@@ -664,6 +1026,17 @@ class App {
           this.active.drawings.selected = null;
           this.active.drawings.update();
         }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
+        e.preventDefault();
+        if (e.shiftKey) this.redoDrawing();
+        else this.undoDrawing();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || e.key === "Y")) {
+        e.preventDefault();
+        this.redoDrawing();
         return;
       }
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;

@@ -139,6 +139,7 @@ export class DrawingLayer {
   }
 
   draw(ctx, size) {
+    if (this.pane.drawingsHidden) return;
     ctx.save();
     ctx.font = "11px -apple-system, Segoe UI, Roboto, sans-serif";
     for (const d of [...this.items, ...(this.temp ? [this.temp] : [])]) {
@@ -358,6 +359,7 @@ export class DrawingLayer {
 
   // Nearest drawing within a few pixels of (x, y), for selecting.
   hitTest(x, y) {
+    if (this.pane.drawingsHidden) return null;
     let best = null,
       bestD = 7;
     const segDist = (p, q) => {

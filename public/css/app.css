@@ -1,3 +1,4 @@
+
 :root,
 [data-theme="dark"] {
   --bg: #131722;
@@ -5,15 +6,17 @@
   --panel-2: #2a2e39;
   --border: #2a2e39;
   --text: #d1d4dc;
+  --text-dim: #9598a1;
   --muted: #787b86;
   --accent: #2962ff;
-  --accent-soft: rgba(41, 98, 255, 0.18);
+  --accent-hover: #1e53e5;
+  --accent-soft: rgba(41, 98, 255, 0.16);
   --up: #089981;
   --down: #f23645;
   --hover: #2a2e39;
   --grid: rgba(42, 46, 57, 0.6);
   --input: #131722;
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --gold: #d4a514;
   --gold-soft: rgba(212, 165, 20, 0.16);
   --scroll: #363a45;
@@ -25,8 +28,10 @@
   --panel-2: #eef0f6;
   --border: #e0e3eb;
   --text: #131722;
+  --text-dim: #50535e;
   --muted: #6a6d78;
   --accent: #2962ff;
+  --accent-hover: #1e53e5;
   --accent-soft: rgba(41, 98, 255, 0.12);
   --up: #089981;
   --down: #f23645;
@@ -48,8 +53,8 @@
   scrollbar-color: var(--scroll) transparent;
 }
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
@@ -66,18 +71,20 @@ html,
 body {
   margin: 0;
   height: 100%;
+  height: 100dvh;
+  width: 100%;
   background: var(--bg);
   color: var(--text);
   font:
     13px/1.4 -apple-system,
     BlinkMacSystemFont,
-    "Segoe UI",
+    "Trebuchet MS",
     Roboto,
     Ubuntu,
-    "Helvetica Neue",
-    Arial,
     sans-serif;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 button,
 select,
@@ -85,6 +92,7 @@ input,
 textarea {
   font: inherit;
   color: inherit;
+  outline: none;
 }
 svg {
   width: 18px;
@@ -111,50 +119,114 @@ svg {
 .muted {
   color: var(--muted);
 }
+.mobile-only {
+  display: none !important;
+}
 
-/* top bar */
+/* ================================================================
+   TOPBAR — TradingView Desktop & Mobile Header
+   ================================================================ */
 .topbar {
   height: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   padding: 0 8px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   overflow-x: auto;
   overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+  z-index: 50;
+  scrollbar-width: none;
 }
 .topbar::-webkit-scrollbar {
+  display: none;
   height: 0;
 }
-.brand {
+
+/* Hamburger / Logo Menu */
+.tv-menu-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0 8px 0 2px;
 }
-.sep {
-  width: 1px;
-  height: 22px;
+.tv-logo-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+.tv-logo-btn:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+.tv-menu-dropdown {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  width: 230px;
+  padding: 6px 0;
+  z-index: 100;
+  animation: in 0.15s ease-out;
+}
+.tv-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.tv-menu-item:hover {
+  background: var(--hover);
+  color: #fff;
+}
+.tv-menu-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+.tv-menu-item:hover svg {
+  color: var(--accent);
+}
+.tv-menu-sep {
+  height: 1px;
   background: var(--border);
-  margin: 0 6px;
-  flex: none;
+  margin: 4px 0;
 }
+
+/* Base Topbar Buttons */
 .tb {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 32px;
-  padding: 0 9px;
+  padding: 0 8px;
   border: 0;
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
   flex: none;
-}
-a.tb {
-  color: inherit;
-  text-decoration: none;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.12s, color 0.12s;
 }
 .tb:hover,
 .tb.active {
@@ -164,73 +236,217 @@ a.tb {
   color: var(--accent);
 }
 .tb.icon {
-  padding: 0 7px;
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
 }
-select.tb {
-  appearance: none;
-  padding-right: 22px;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 12px) 14px,
-    calc(100% - 8px) 14px;
-  background-size: 4px 4px;
-  background-repeat: no-repeat;
+
+/* Symbol Pill Button (Authentic TradingView Look) */
+.symbol-btn {
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-select.tb option {
-  background: var(--panel);
+.symbol-btn:hover {
+  background: var(--hover);
+  border-color: var(--border);
 }
-.tb.check {
-  gap: 5px;
+.symbol-btn .search-icon {
   color: var(--muted);
 }
-.symbol-btn {
+.symbol-btn .ex-badge {
+  font-size: 9.5px;
   font-weight: 600;
-  font-size: 14px;
+  color: var(--muted);
+  background: var(--panel-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
+.symbol-btn .chevron-down {
+  color: var(--muted);
+}
+
+/* Compare (+) Button */
+.compare-btn {
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.compare-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* Separator Line */
+.sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+  flex: none;
+}
+
+/* Timeframe Group */
 .tf-group {
   display: flex;
   gap: 1px;
+  align-items: center;
   flex: none;
 }
 .tf-group button {
-  height: 32px;
-  min-width: 34px;
+  height: 30px;
+  min-width: 30px;
   border: 0;
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
   padding: 0 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-dim);
+  transition: all 0.12s;
 }
 .tf-group button:hover {
   background: var(--hover);
+  color: var(--text);
 }
 .tf-group button.active {
   color: var(--accent);
   background: var(--accent-soft);
+  font-weight: 700;
 }
 .tf-custom {
-  width: 46px;
-  height: 28px;
-  margin-left: 4px;
+  width: 38px;
+  height: 26px;
+  margin-left: 2px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--input);
-  padding: 0 6px;
+  padding: 0 4px;
   text-align: center;
+  font-size: 11px;
+  color: var(--text);
   flex: none;
 }
+.tf-custom:focus {
+  border-color: var(--accent);
+}
+
+/* Chart Type Select */
+.chart-type-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+select.tb {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 20px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 11px) 14px,
+    calc(100% - 7px) 14px;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+  font-size: 12.5px;
+}
+select.tb option {
+  background: var(--panel);
+  color: var(--text);
+}
+
+/* Indicators Button (TV fx badge) */
+.indicators-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.indicators-btn .fx-badge {
+  background: var(--accent);
+  color: #ffffff;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  display: inline-block;
+  letter-spacing: -0.02em;
+}
+
+/* Alert & Replay Buttons */
+.alert-btn,
+.replay-btn {
+  font-size: 12.5px;
+}
+.alert-btn svg,
+.replay-btn svg {
+  color: var(--muted);
+}
+.alert-btn:hover svg,
+.replay-btn:hover svg {
+  color: var(--accent);
+}
+
+/* Undo / Redo */
+.undo-btn svg,
+.redo-btn svg {
+  color: var(--muted);
+}
+.undo-btn:hover svg,
+.redo-btn:hover svg {
+  color: var(--text);
+}
+
+/* Topbar Right Section */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.layout-sel {
+  max-width: 90px;
+  font-size: 12px;
+}
+.sync-check {
+  font-size: 12px;
+  color: var(--muted);
+  gap: 4px;
+  cursor: pointer;
+}
+.sync-check input {
+  cursor: pointer;
+  accent-color: var(--accent);
+}
 .status {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--muted);
-  margin: 0 6px 0 8px;
+  margin-left: 6px;
   flex: none;
 }
 .status.ok {
   background: var(--up);
+  box-shadow: 0 0 6px rgba(8, 153, 129, 0.6);
 }
 .status.warn {
   background: #f7a600;
@@ -239,22 +455,178 @@ select.tb option {
   background: var(--down);
 }
 
-/* main layout */
+/* ================================================================
+   MAIN WORKSPACE & LAYOUT
+   ================================================================ */
 .main {
   display: flex;
   height: calc(100% - 44px);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Left Drawing Toolbar (TradingView Dock) */
 .drawbar {
   width: 44px;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 6px;
+  padding: 6px 0;
   gap: 2px;
   flex: none;
+  background: var(--bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  z-index: 25;
+}
+.drawbar::-webkit-scrollbar {
+  display: none;
 }
 .drawbar button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.drawbar button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.drawbar button.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.drawbar hr {
+  width: 22px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
+/* Center Chart Section */
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.grid {
+  flex: 1;
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  min-height: 0;
+  position: relative;
+}
+
+/* ================================================================
+   DATE RANGE BAR & SCALES (TradingView Bottom Strip)
+   ================================================================ */
+.range-bar {
+  height: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  z-index: 15;
+  flex: none;
+  white-space: nowrap;
+  user-select: none;
+}
+.range-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.range-buttons::-webkit-scrollbar {
+  display: none;
+}
+.range-btn {
+  height: 24px;
+  padding: 0 7px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.range-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.range-btn.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+.range-scales {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.scale-btn {
+  height: 22px;
+  padding: 0 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.12s;
+}
+.scale-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.scale-btn.active,
+.scale-btn.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ================================================================
+   RIGHT DOCK & SIDE PANEL (TradingView Desktop Style)
+   ================================================================ */
+.right-dock {
+  width: 44px;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 4px;
+  flex: none;
+  background: var(--bg);
+  z-index: 30;
+}
+.dock-btn {
   width: 34px;
   height: 34px;
   border: 0;
@@ -263,32 +635,380 @@ select.tb option {
   cursor: pointer;
   display: grid;
   place-items: center;
+  color: var(--muted);
+  transition: all 0.12s;
 }
-.drawbar button:hover {
+.dock-btn:hover {
   background: var(--hover);
+  color: var(--text);
 }
-.drawbar button.active {
+.dock-btn.active {
   color: var(--accent);
   background: var(--accent-soft);
 }
-.drawbar hr {
-  width: 24px;
-  border: 0;
-  border-top: 1px solid var(--border);
-  margin: 4px 0;
-}
-.center {
-  flex: 1;
+
+.side {
+  width: 320px;
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  flex: none;
+  background: var(--bg);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+  z-index: 28;
 }
-.grid {
-  flex: 1;
+.side.closed {
+  width: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  pointer-events: none;
+}
+.side-header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+  flex: none;
+}
+.side-close-btn {
+  width: 28px;
+  height: 28px;
   display: grid;
-  gap: 1px;
-  background: var(--border);
-  min-height: 0;
+  place-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+}
+.side-close-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* Bottom Panel */
+.bottom {
+  height: 320px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  background: var(--bg);
+  transition: height 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 20;
+}
+.bottom.collapsed {
+  height: 36px;
+}
+.bottom.collapsed .tab-body {
+  display: none;
+}
+.bottom.collapsed #bottomToggle svg {
+  transform: rotate(180deg);
+}
+
+/* ================================================================
+   MOBILE APP NAVIGATION & PHONE INTERFACE (<= 768px)
+   ================================================================ */
+.mobile-nav {
+  display: none;
+}
+.mobile-sheet {
+  display: none;
+}
+.mobile-draw-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: inline-flex !important;
+  }
+
+  html,
+  body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Compact Phone Topbar */
+  .topbar {
+    height: 44px;
+    min-height: 44px;
+    padding: 0 4px;
+    gap: 2px;
+  }
+  .topbar .sep {
+    display: none;
+  }
+  .topbar .sync-check,
+  .topbar .layout-sel,
+  .topbar #status,
+  .topbar .alert-btn span,
+  .topbar .replay-btn span,
+  .topbar .indicators-btn .label {
+    display: none !important;
+  }
+
+  .symbol-btn {
+    font-size: 13px;
+    padding: 0 6px;
+    gap: 4px;
+  }
+  .symbol-btn .ex-badge {
+    display: none;
+  }
+  .tf-group button {
+    height: 28px;
+    min-width: 26px;
+    padding: 0 3px;
+    font-size: 11px;
+  }
+  .tf-custom {
+    display: none;
+  }
+
+  /* Main Workspace occupies full screen above mobile nav */
+  .main {
+    height: calc(100dvh - 44px - 52px);
+    height: calc(100% - 44px - 52px);
+  }
+
+  /* Drawing bar slides out over chart on phone */
+  .drawbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 32px;
+    width: 44px;
+    background: var(--panel);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+    transform: translateX(-105%);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 40;
+  }
+  .drawbar.open {
+    transform: translateX(0);
+  }
+
+  /* Floating Drawing Button (Pencil on phone) */
+  .mobile-draw-toggle {
+    display: grid !important;
+    place-items: center;
+    position: absolute;
+    left: 10px;
+    bottom: 42px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    color: var(--text);
+    z-index: 35;
+    cursor: pointer;
+  }
+  .mobile-draw-toggle:active {
+    transform: scale(0.92);
+  }
+
+  /* Right dock is hidden on mobile: replaced by mobile nav */
+  .right-dock {
+    display: none;
+  }
+
+  /* Side panel becomes slide-in mobile sheet/drawer */
+  .side {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 52px;
+    width: 90vw;
+    max-width: 380px;
+    height: calc(100dvh - 52px);
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.7);
+    transform: translateX(105%);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+  }
+  .side.open {
+    transform: translateX(0);
+    width: 90vw !important;
+    border-left: 1px solid var(--border) !important;
+    pointer-events: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Backdrop for mobile drawer */
+  .side-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 995;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .side-backdrop.open {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Bottom tabs on mobile */
+  .bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 25;
+  }
+  .bottom:not(.collapsed) {
+    height: 60%;
+    max-height: 65vh;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  /* ================================================================
+     TRADINGVIEW MOBILE BOTTOM NAVIGATION BAR
+     ================================================================ */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    z-index: 1010;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .m-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.12s;
+  }
+  .m-nav-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .m-nav-btn.active {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Mobile Menu Sheet */
+  .mobile-sheet {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1020;
+    pointer-events: none;
+  }
+  .mobile-sheet:not(.hidden) {
+    pointer-events: auto;
+  }
+  .sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .mobile-sheet:not(.hidden) .sheet-backdrop {
+    opacity: 1;
+  }
+  .sheet-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 12px 16px 36px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+    transform: translateY(105%);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mobile-sheet:not(.hidden) .sheet-content {
+    transform: translateY(0);
+  }
+  .sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+  .sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .sheet-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .sheet-close {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .sheet-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .sheet-card svg {
+    width: 22px;
+    height: 22px;
+    color: var(--accent);
+  }
+  .sheet-card span {
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .sheet-card:active {
+    background: var(--hover);
+  }
+}
+
 }
 .side {
   width: 300px;
@@ -1087,382 +1807,4 @@ table.t.heat td { text-align: center; } table.t.heat td.base { outline: 2px soli
 .tabs button[data-tab="ptq"] { color: #6cb8ff; font-weight: 600; }
 
 
-/* ================================================================
-   MOBILE RESPONSIVE — TradingView App Standard Phone Layout
-   ================================================================ */
-
-/* Backdrop overlay for mobile drawer */
-.side-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 998;
-  opacity: 0;
-  transition: opacity 0.22s ease;
-}
-.side-backdrop.open {
-  display: block;
-  opacity: 1;
-}
-
-/* Close button on mobile side drawer */
-.side-close-btn {
-  display: none;
-}
-
-/* Base Topbar horizontal swipe */
-.topbar {
-  height: 44px;
-  min-height: 44px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0 8px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  z-index: 20;
-  flex-shrink: 0;
-}
-.topbar::-webkit-scrollbar {
-  display: none;
-  height: 0;
-  width: 0;
-}
-
-.topbar .tb,
-.topbar select,
-.topbar input,
-.topbar .tf-group,
-.topbar .brand,
-.topbar .sep {
-  flex-shrink: 0;
-}
-
-#sideToggleBtn {
-  background: var(--hover);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-weight: 600;
-  border-radius: 4px;
-  height: 32px;
-  padding: 0 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-#sideToggleBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
-
-/* Viewport fit for phone screens */
-@media (max-width: 900px) {
-  .tb span { display: inline; }
-}
-
-/* Tablet & Mobile Screens (<= 768px) */
-@media (max-width: 768px) {
-  html, body {
-    width: 100%;
-    height: 100%;
-    height: 100dvh;
-    overflow: hidden;
-    touch-action: manipulation;
-  }
-
-  .main {
-    height: calc(100% - 44px);
-    height: calc(100dvh - 44px);
-    width: 100%;
-    display: flex;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Drawing toolbar as sleek mobile strip */
-  .drawbar {
-    width: 36px;
-    flex-shrink: 0;
-    padding: 3px 0;
-    gap: 2px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: none;
-    background: var(--bg);
-    border-right: 1px solid var(--border);
-  }
-  .drawbar::-webkit-scrollbar { display: none; }
-  .drawbar button {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
-    margin: 0 auto;
-    flex-shrink: 0;
-  }
-  .drawbar svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .center {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .grid {
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  /* Slide-over Watchlist Drawer */
-  .side {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 86vw;
-    max-width: 360px;
-    height: 100%;
-    height: 100dvh;
-    background: var(--panel);
-    border-left: 1px solid var(--border);
-    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
-    display: flex;
-    flex-direction: column;
-    z-index: 999;
-    transform: translateX(105%);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-    visibility: hidden;
-  }
-  .side.open {
-    transform: translateX(0);
-    pointer-events: auto;
-    visibility: visible;
-  }
-
-  .side-close-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    margin-left: auto;
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 0;
-    flex-shrink: 0;
-  }
-  .side-close-btn:hover {
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  /* Bottom tabs & panel */
-  .bottom {
-    flex-shrink: 0;
-    border-top: 1px solid var(--border);
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    transition: height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 10;
-  }
-  .bottom.collapsed {
-    height: 36px;
-  }
-  .bottom:not(.collapsed) {
-    height: 50%;
-    max-height: 52vh;
-  }
-  .bottom .tabs {
-    height: 36px;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 0 4px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    border-bottom: 1px solid var(--border);
-  }
-  .bottom .tabs::-webkit-scrollbar { display: none; }
-  .bottom .tabs button {
-    height: 28px;
-    padding: 0 9px;
-    font-size: 11px;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  /* Modals on tablet/phone */
-  .modal-card {
-    margin: 12px auto;
-    max-width: calc(100vw - 20px);
-    width: calc(100vw - 20px);
-    max-height: calc(100dvh - 24px);
-    border-radius: 10px;
-    overflow-y: auto;
-  }
-}
-
-/* Phone screens (<= 480px) */
-@media (max-width: 480px) {
-  .topbar {
-    height: 42px;
-    min-height: 42px;
-    padding: 0 5px;
-    gap: 2px;
-  }
-  .main {
-    height: calc(100% - 42px);
-    height: calc(100dvh - 42px);
-  }
-
-  .tb {
-    height: 30px;
-    padding: 0 7px;
-    font-size: 11px;
-    border-radius: 3px;
-  }
-  .tb.icon {
-    width: 30px;
-    min-width: 30px;
-    padding: 0;
-  }
-
-  #symbolBtn {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 0 8px;
-  }
-
-  .tf-group button {
-    height: 28px;
-    min-width: 26px;
-    font-size: 10px;
-    padding: 0 4px;
-  }
-
-  #tfCustom {
-    width: 32px;
-    height: 28px;
-    font-size: 10px;
-    padding: 0 3px;
-  }
-
-  #chartType {
-    height: 28px;
-    font-size: 11px;
-    max-width: 78px;
-    padding-left: 5px;
-  }
-
-  #layoutSel {
-    height: 28px;
-    font-size: 11px;
-    max-width: 75px;
-  }
-
-  #sideToggleBtn {
-    height: 30px;
-    padding: 0 8px;
-    font-size: 11px;
-  }
-
-  .drawbar {
-    width: 34px;
-  }
-  .drawbar button {
-    width: 28px;
-    height: 28px;
-  }
-
-  .legend {
-    font-size: 10px;
-    max-width: calc(100% - 50px);
-  }
-  .legend .ohlc span {
-    margin-right: 3px;
-  }
-
-  .wl-row {
-    min-height: 44px;
-    padding: 8px 10px;
-  }
-
-  .modal-card {
-    margin: 6px auto;
-    max-width: calc(100vw - 12px);
-    width: calc(100vw - 12px);
-    max-height: calc(100dvh - 16px);
-  }
-}
-
-/* Very narrow phones (<= 360px) */
-@media (max-width: 360px) {
-  .drawbar { width: 30px; }
-  .drawbar button { width: 26px; height: 26px; }
-  .topbar { padding: 0 3px; gap: 1px; }
-}
-
-/* Landscape phone */
-@media (max-height: 480px) and (orientation: landscape) {
-  .topbar { height: 38px; min-height: 38px; }
-  .main { height: calc(100% - 38px); height: calc(100dvh - 38px); }
-  .bottom.collapsed { height: 32px; }
-  .bottom:not(.collapsed) { height: 42%; }
-  .drawbar { width: 32px; }
-  .drawbar button { width: 26px; height: 26px; }
-}
-
-/* Touch targets */
-@media (pointer: coarse) {
-  .tb { min-height: 32px; }
-  .drawbar button { min-height: 30px; }
-  .wl-row { min-height: 46px; }
-  .tabs button { min-height: 30px; }
-}
-
-/* Safe areas */
-@supports (padding: env(safe-area-inset-top)) {
-  .topbar {
-    padding-left: max(6px, env(safe-area-inset-left));
-    padding-right: max(6px, env(safe-area-inset-right));
-    padding-top: env(safe-area-inset-top);
-    height: calc(44px + env(safe-area-inset-top));
-  }
-  .bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
+/* ================================================================

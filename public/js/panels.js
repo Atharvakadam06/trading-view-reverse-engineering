@@ -229,6 +229,7 @@ export function initPanels(app) {
       .querySelectorAll("#sideTabs button")
       .forEach((b) => b.classList.toggle("active", b.dataset.tab === t));
     renderSide();
+    app.syncRightDock?.();
   }
   function showBottom(t, toggle = false) {
     if (
@@ -324,7 +325,9 @@ export function initPanels(app) {
         app.persist();
         return drawRows();
       }
-      app.setSymbol(row.dataset.sym); if (window.innerWidth <= 768 && app.toggleSide) app.toggleSide(false);
+      app.setSymbol(row.dataset.sym);
+      if (app.setMobileTab) app.setMobileTab("chart");
+      else if (window.innerWidth <= 768 && app.toggleSide) app.toggleSide(false);
     };
     drawRows();
   }
@@ -1650,6 +1653,10 @@ export function initPanels(app) {
   P.onTheme = () => {
     renderBottom();
   };
+  P.showSide = showSide;
+  P.showBottom = showBottom;
+  P.getSideTab = () => sideTab;
+  P.getBottomTab = () => bottomTab;
   showSide("watchlist");
   return P;
 }
