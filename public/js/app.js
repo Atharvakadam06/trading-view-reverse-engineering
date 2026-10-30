@@ -250,10 +250,7 @@ class App {
         id: `custom:${file.replace(/\.js$/, "")}`,
       });
     } catch (e) {
-      this.toast(
-        `Custom indicator ${file} failed to load: ${e.message}`,
-        "err",
-      );
+      console.warn('Custom indicator ' + file + ' failed: ' + e.message);
       return null;
     }
   }

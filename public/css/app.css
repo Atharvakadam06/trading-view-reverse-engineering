@@ -648,20 +648,20 @@ select.tb option {
 }
 
 .side {
-  width: 320px;
-  border-left: 1px solid var(--border);
+  width: 0;
+  border-left: 0;
   display: flex;
   flex-direction: column;
   flex: none;
   background: var(--bg);
-  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+  transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 28;
+  overflow: hidden;
 }
-.side.closed {
-  width: 0 !important;
-  border: none !important;
-  overflow: hidden !important;
-  pointer-events: none;
+.side.open {
+  width: 320px !important;
+  border-left: 1px solid var(--border) !important;
+  overflow: visible !important;
 }
 .side-header {
   height: 38px;
@@ -724,6 +724,60 @@ select.tb option {
 }
 
 @media (max-width: 768px) {
+  /* Mobile compact topbar */
+  .tb-group.hide-mobile,
+  .tb-btn.hide-mobile {
+    display: none !important;
+  }
+  .topbar {
+    height: 44px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .topbar::-webkit-scrollbar {
+    display: none;
+  }
+  .tb-btn {
+    height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+  #symbolBtn {
+    max-width: 130px;
+    padding: 0 6px !important;
+  }
+  #symbolLabel {
+    font-size: 13px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tb-badge {
+    display: none !important;
+  }
+  /* Show only 3 key timeframes on phone or scroll */
+  #tfButtons {
+    gap: 1px !important;
+  }
+  #tfButtons button:not(.active):nth-child(n+5) {
+    display: none;
+  }
+  #tfCustom {
+    display: none !important;
+  }
+  #indicatorsBtn {
+    padding: 0 8px !important;
+  }
+  #indicatorsBtn span {
+    display: none;
+  }
+  #indicatorsBtn::after {
+    content: "fx";
+    font-weight: 700;
+  }
+
   .mobile-only {
     display: inline-flex !important;
   }
@@ -822,26 +876,25 @@ select.tb option {
 
   /* Side panel becomes slide-in mobile sheet/drawer */
   .side {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 52px;
-    width: 90vw;
-    max-width: 380px;
-    height: calc(100dvh - 52px);
-    background: var(--panel);
-    border-left: 1px solid var(--border);
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.7);
-    transform: translateX(105%);
-    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1000;
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 52px !important;
+    width: 90vw !important;
+    max-width: 380px !important;
+    height: calc(100dvh - 52px) !important;
+    background: var(--panel) !important;
+    border-left: 1px solid var(--border) !important;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.7) !important;
+    transform: translateX(105%) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 1000 !important;
+    overflow-y: auto !important;
   }
   .side.open {
-    transform: translateX(0);
-    width: 90vw !important;
-    border-left: 1px solid var(--border) !important;
+    transform: translateX(0) !important;
     pointer-events: auto !important;
-    overflow: visible !important;
   }
 
   /* Backdrop for mobile drawer */
@@ -1007,16 +1060,6 @@ select.tb option {
   .sheet-card:active {
     background: var(--hover);
   }
-}
-
-}
-.side {
-  width: 300px;
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex: none;
-  background: var(--bg);
 }
 
 /* chart panes */
@@ -1667,13 +1710,7 @@ h4 {
   }
 }
 
-@media (max-width: 900px) {
-  .side {
-    display: none;
-  }
-  .bottom {
-    height: 45%;
-  }
+
 }
 
 /* PTQ connector */
