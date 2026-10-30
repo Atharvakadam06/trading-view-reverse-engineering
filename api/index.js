@@ -34,6 +34,12 @@ function send(res, status, body) {
 }
 
 async function readBody(req, limit = 2e6) {
+  if (req.body) {
+    if (typeof req.body === "string") {
+      try { return JSON.parse(req.body); } catch { return {}; }
+    }
+    return req.body;
+  }
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
     req.on("data", (c) => { size += c.length; if (size > limit) { reject(Object.assign(new Error("Request too large"), { status: 413 })); return; } chunks.push(c); });
@@ -43,6 +49,9 @@ async function readBody(req, limit = 2e6) {
 }
 
 async function readText(req, limit = 300e6) {
+  if (req.body) {
+    return typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+  }
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
     req.on("data", (c) => { size += c.length; if (size > limit) { reject(httpError(413, `The file is over ${Math.round(limit / 1e6)} MB`)); return; } chunks.push(c); });

@@ -73,6 +73,11 @@ class App {
       syncCrosshair: false,
       ...this.state.settings,
     };
+    if (this.state.panes) {
+      for (const p of this.state.panes) {
+        p.indicators = [];
+      }
+    }
     this.state.settings = this.settings;
     document.documentElement.dataset.theme = this.settings.theme;
     await this.loadCustomIndicators();
