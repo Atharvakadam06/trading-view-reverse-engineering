@@ -92,6 +92,7 @@
       <button id="indicatorsBtn" class="tb indicators-btn" title="Indicators, Metrics & Strategies">
         <span class="fx-badge">fx</span>
         <span class="label">Indicators</span>
+        <span class="ind-count" id="indCount"></span>
       </button>
 
       <div class="sep"></div>
@@ -282,23 +283,23 @@
 
     <!-- Mobile Bottom Navigation Bar (TradingView Mobile App Signature Navigation) -->
     <nav class="mobile-nav" id="mobileNav">
-      <button class="m-nav-btn active" data-mnav="chart">
+      <button class="m-nav-btn active" data-tab="chart">
         <svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-7 4 4 6-10" stroke-width="2"/><circle cx="19" cy="3" r="1.5"/></svg>
         <span>Chart</span>
       </button>
-      <button class="m-nav-btn" data-mnav="watchlist">
+      <button class="m-nav-btn" data-tab="watchlist">
         <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-width="2.2"/></svg>
         <span>Watchlist</span>
       </button>
-      <button class="m-nav-btn" data-mnav="explore">
+      <button class="m-nav-btn" data-tab="explore">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="3"/></svg>
         <span>Explore</span>
       </button>
-      <button class="m-nav-btn" data-mnav="news">
+      <button class="m-nav-btn" data-tab="news">
         <svg viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m4 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9"/></svg>
         <span>News</span>
       </button>
-      <button class="m-nav-btn" data-mnav="menu">
+      <button class="m-nav-btn" data-tab="menu">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="18" r="1.5"/></svg>
         <span>Menu</span>
       </button>
@@ -308,33 +309,41 @@
     <div id="mobileMenuSheet" class="mobile-sheet hidden">
       <div class="sheet-backdrop" id="sheetBackdrop"></div>
       <div class="sheet-content">
-        <div class="sheet-handle"></div>
+        <div class="sheet-handle" id="sheetHandle"></div>
         <div class="sheet-header">
           <h3>Menu & Features</h3>
           <button class="sheet-close" id="sheetCloseBtn">&times;</button>
         </div>
         <div class="sheet-grid">
-          <div class="sheet-card" data-sheet-act="paper">
+          <div class="sheet-card" data-action="paper">
             <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             <span>Paper Trading</span>
           </div>
-          <div class="sheet-card" data-sheet-act="tester">
+          <div class="sheet-card" data-action="tester">
             <svg viewBox="0 0 24 24"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3zM6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"/></svg>
             <span>Strategy Tester</span>
           </div>
-          <div class="sheet-card" data-sheet-act="editor">
+          <div class="sheet-card" data-action="editor">
             <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             <span>Pine Editor</span>
           </div>
-          <div class="sheet-card" data-sheet-act="settings">
+          <div class="sheet-card" data-action="fullscreen">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Fullscreen</span>
+            </div>
+            <div class="sheet-card" data-action="settings">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
             <span>Settings</span>
           </div>
-          <div class="sheet-card" data-sheet-act="theme">
+          <div class="sheet-card" data-action="theme">
             <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg>
             <span>Theme Toggle</span>
           </div>
-          <div class="sheet-card" data-sheet-act="clear">
+          <div class="sheet-card" data-action="clear-indicators">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Remove Indicators</span>
+            </div>
+            <div class="sheet-card" data-action="clear-drawings">
             <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>
             <span>Clear Drawings</span>
           </div>
@@ -343,7 +352,7 @@
     </div>
 
     <!-- Backdrop for side panel and modals -->
-    <div id="sideBackdrop" class="side-backdrop"></div>
+    <div id="sideBackdrop" class="side-backdrop" aria-hidden="true"></div>
     <div id="modal" class="modal hidden">
       <div class="modal-card" id="modalCard"></div>
     </div>

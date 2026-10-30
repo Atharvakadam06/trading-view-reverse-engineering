@@ -654,9 +654,10 @@ select.tb option {
   flex-direction: column;
   flex: none;
   background: var(--bg);
-  transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 28;
   overflow: hidden;
+  will-change: width;
 }
 .side.open {
   width: 320px !important;
@@ -878,19 +879,22 @@ select.tb option {
   .side {
     display: flex !important;
     position: fixed !important;
-    top: 0 !important;
+    top: 44px !important;
     right: 0 !important;
     bottom: 52px !important;
-    width: 90vw !important;
-    max-width: 380px !important;
-    height: calc(100dvh - 52px) !important;
-    background: var(--panel) !important;
+    left: auto !important;
+    width: 88vw !important;
+    max-width: 360px !important;
+    height: auto !important;
+    background: var(--bg) !important;
     border-left: 1px solid var(--border) !important;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.7) !important;
-    transform: translateX(105%) !important;
-    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.5) !important;
+    transform: translateX(110%) !important;
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1) !important;
     z-index: 1000 !important;
     overflow-y: auto !important;
+    will-change: transform !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   .side.open {
     transform: translateX(0) !important;
@@ -976,7 +980,7 @@ select.tb option {
     z-index: 1020;
     pointer-events: none;
   }
-  .mobile-sheet:not(.hidden) {
+  .mobile-sheet.open {
     pointer-events: auto;
   }
   .sheet-backdrop {
@@ -987,7 +991,7 @@ select.tb option {
     opacity: 0;
     transition: opacity 0.2s ease;
   }
-  .mobile-sheet:not(.hidden) .sheet-backdrop {
+  .mobile-sheet.open .sheet-backdrop {
     opacity: 1;
   }
   .sheet-content {
@@ -1003,7 +1007,7 @@ select.tb option {
     transform: translateY(105%);
     transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .mobile-sheet:not(.hidden) .sheet-content {
+  .mobile-sheet.open .sheet-content {
     transform: translateY(0);
   }
   .sheet-handle {
@@ -1844,4 +1848,244 @@ table.t.heat td { text-align: center; } table.t.heat td.base { outline: 2px soli
 .tabs button[data-tab="ptq"] { color: #6cb8ff; font-weight: 600; }
 
 
-/* ================================================================
+/* ================================================================
+
+/* ============================================================
+   SCROLLBAR STYLING - native scrollbars on scrollable panels
+   ============================================================ */
+#sideBody,
+#bottomBody,
+.tab-body,
+.modal-body {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Custom thin scrollbars on desktop */
+@media (min-width: 769px) {
+  #sideBody::-webkit-scrollbar,
+  #bottomBody::-webkit-scrollbar,
+  .tab-body::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  #sideBody::-webkit-scrollbar-track,
+  #bottomBody::-webkit-scrollbar-track,
+  .tab-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #sideBody::-webkit-scrollbar-thumb,
+  #bottomBody::-webkit-scrollbar-thumb,
+  .tab-body::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+  #sideBody::-webkit-scrollbar-thumb:hover,
+  #bottomBody::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+}
+
+/* ============================================================
+   INDICATOR REMOVE BUTTON IN LEGEND
+   ============================================================ */
+.legend .ind .acts button[data-act="remove"],
+.legend .ind .acts button[data-act="hide"],
+.legend .ind .acts button[data-act="settings"] {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.legend .ind .acts button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.legend .ind .acts button[data-act="remove"]:hover {
+  color: var(--down);
+}
+
+/* Indicator count badge on indicators button */
+.ind-count {
+  display: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+/* ============================================================
+   SMOOTH BUTTON INTERACTIONS (micro-animations)
+   ============================================================ */
+.tb, .btn, .dock-btn, .m-nav-btn, .sheet-card, .range-btn, .scale-btn {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Active state press feedback on mobile */
+@media (max-width: 768px) {
+  .tb:active,
+  .tb-btn:active {
+    opacity: 0.7;
+    transform: scale(0.96);
+  }
+  .m-nav-btn:active {
+    opacity: 0.7;
+  }
+  .sheet-card:active {
+    transform: scale(0.95);
+    background: var(--hover);
+  }
+  .range-btn:active,
+  .scale-btn:active {
+    transform: scale(0.94);
+  }
+
+  /* Mobile drawbar: more compact and touch-friendly */
+  .drawbar button {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+  }
+  .drawbar svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Mobile topbar: prevent text selection */
+  .topbar * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Range bar scrollable on mobile */
+  .range-bar {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .range-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .range-buttons {
+    flex-shrink: 0;
+  }
+
+  /* Bottom panel - better mobile sizing */
+  .bottom:not(.collapsed) {
+    height: 55vh;
+    max-height: 60vh;
+  }
+
+  /* Improve touch targets */
+  #bottomTabs button {
+    padding: 0 10px;
+    height: 36px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #bottomTabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #bottomTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mobile draw toggle button - cleaner */
+  .mobile-draw-toggle {
+    bottom: 60px;
+    left: 12px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .mobile-draw-toggle.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(41, 98, 255, 0.5);
+  }
+}
+
+/* ============================================================
+   DESKTOP IMPROVEMENTS
+   ============================================================ */
+@media (min-width: 769px) {
+  /* Smooth right dock hover */
+  .dock-btn {
+    transition: background 0.12s, color 0.12s, transform 0.1s;
+  }
+  .dock-btn:active {
+    transform: scale(0.9);
+  }
+
+  /* Topbar button hover glow */
+  .tb:hover:not(:disabled) {
+    transition: background 0.1s, color 0.1s;
+  }
+
+  /* Range bar buttons */
+  .range-btn {
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+  }
+}
+
+/* ============================================================
+   TV MENU DROPDOWN - better positioning and animation
+   ============================================================ */
+.tv-menu-dropdown {
+  animation: none;
+}
+.tv-menu-dropdown:not(.hidden) {
+  animation: menuSlideIn 0.15s ease;
+}
+@keyframes menuSlideIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================================
+   MODAL - smooth open/close
+   ============================================================ */
+.modal:not(.hidden) .modal-card {
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ============================================================
+   TOAST - smooth slide in
+   ============================================================ */
+.toast {
+  animation: toastIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   BOTTOM PANEL - smooth expand/collapse
+   ============================================================ */
+.bottom {
+  transition: height 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: height;
+}

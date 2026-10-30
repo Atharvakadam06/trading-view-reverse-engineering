@@ -771,6 +771,7 @@ export class ChartPane {
         ind.hidden = !ind.hidden;
         this.render(false);
         this.app.persist();
+        this.app.syncToolbar?.();
       }
       if (act === "settings") this.app.openIndicatorSettings(this, ind);
     };
@@ -782,12 +783,14 @@ export class ChartPane {
     this.cfg.indicators.push({ uid, id, params });
     this.render(false);
     this.app.persist();
+    this.app.syncToolbar?.();
     return uid;
   }
   removeIndicator(uid) {
     this.cfg.indicators = this.cfg.indicators.filter((x) => x.uid !== uid);
     this.render(false);
     this.app.persist();
+    this.app.syncToolbar?.();
   }
 
   // ---------- drawing tools ----------

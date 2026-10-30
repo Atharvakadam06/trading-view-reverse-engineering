@@ -132,6 +132,107 @@ class App {
   }
 
   
+  
+  // Touch swipe-down closes mobile menu sheet
+  _initSheetSwipe(sheet) {
+    if (!sheet) return;
+    let startY = 0;
+    let startX = 0;
+    let isDragging = false;
+    sheet.addEventListener('touchstart', (e) => {
+      if (!e.target.closest('.sheet-content')) return;
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dy = e.touches[0].clientY - startY;
+      const content = sheet.querySelector('.sheet-content');
+      if (dy > 0 && content) {
+        content.style.transition = 'none';
+        content.style.transform = `translateY(${dy}px)`;
+      }
+    }, { passive: true });
+    sheet.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const dy = e.changedTouches[0].clientY - startY;
+      const content = sheet.querySelector('.sheet-content');
+      if (content) {
+        content.style.transition = '';
+        content.style.transform = '';
+      }
+      if (dy > 80) {
+        // Swipe down -> close
+        sheet.classList.remove('open');
+        setTimeout(() => {
+          sheet.classList.add('hidden');
+          if (this.mobileTab === 'menu') {
+            this.mobileTab = 'chart';
+            document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+              b.classList.toggle('active', b.dataset.tab === 'chart');
+            });
+          }
+        }, 280);
+      }
+    }, { passive: true });
+  }
+
+  // Touch swipe-right/left closes/opens mobile side panel
+  _initSideSwipe(sideEl) {
+    if (!sideEl) return;
+    let startX = 0;
+    let startY = 0;
+    let isDragging = false;
+    sideEl.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isDragging = true;
+    }, { passive: true });
+    sideEl.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - startX;
+      if (dx > 0 && sideEl.classList.contains('open')) {
+        sideEl.style.transition = 'none';
+        sideEl.style.transform = `translateX(${dx}px)`;
+      }
+    }, { passive: true });
+    sideEl.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = Math.abs(e.changedTouches[0].clientY - startY);
+      sideEl.style.transition = '';
+      sideEl.style.transform = '';
+      if (dx > 60 && dy < 80) {
+        // Swipe right -> close
+        this.toggleSide(false);
+        if (this.mobileTab === 'watchlist' || this.mobileTab === 'news') {
+          this.mobileTab = 'chart';
+          document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+            b.classList.toggle('active', b.dataset.tab === 'chart');
+          });
+        }
+      }
+    }, { passive: true });
+
+    // Swipe from left edge to open side panel
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches[0].clientX < 20 && !sideEl.classList.contains('open') && window.innerWidth <= 768) {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+      }
+    }, { passive: true });
+  }
+
+  // Remove a single indicator by uid from active pane
+  removeIndicator(uid) {
+    if (!this.active) return;
+    this.active.removeIndicator(uid);
+    this.toast('Indicator removed');
+  }
+
   clearAllIndicators() {
     for (const p of this.panes) {
       p.cfg.indicators = [];
@@ -217,29 +318,38 @@ class App {
 
   setMobileTab(tab) {
     this.mobileTab = tab;
-    document.querySelectorAll("#mobileNav [data-tab]").forEach((b) => {
-      b.classList.toggle("active", b.dataset.tab === tab);
+    document.querySelectorAll('#mobileNav .m-nav-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === tab);
     });
-    const sheet = $("#mobileMenuSheet");
-    const bottomEl = $("#bottom");
-    if (tab === "chart") {
+    const sheet = $('#mobileMenuSheet');
+    const bottomEl = $('#bottom');
+    if (tab === 'chart') {
       this.toggleSide(false);
-      bottomEl?.classList.add("collapsed");
-      sheet?.classList.add("hidden");
-    } else if (tab === "watchlist") {
-      sheet?.classList.add("hidden");
-      this.panels?.showSide("watchlist");
+      bottomEl?.classList.add('collapsed');
+      if (sheet) {
+        sheet.classList.add('hidden');
+        sheet.classList.remove('open');
+      }
+    } else if (tab === 'watchlist') {
+      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
+      this.panels?.showSide('watchlist');
       this.toggleSide(true);
-    } else if (tab === "explore") {
-      sheet?.classList.add("hidden");
+    } else if (tab === 'explore') {
+      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
       this.toggleSide(false);
-      this.panels?.showBottom("screener");
-    } else if (tab === "news") {
-      sheet?.classList.add("hidden");
-      this.panels?.showSide("news");
+      this.panels?.showBottom('screener');
+      if (bottomEl) {
+        bottomEl.classList.remove('collapsed');
+      }
+    } else if (tab === 'news') {
+      if (sheet) { sheet.classList.add('hidden'); sheet.classList.remove('open'); }
+      this.panels?.showSide('news');
       this.toggleSide(true);
-    } else if (tab === "menu") {
-      sheet?.classList.remove("hidden");
+    } else if (tab === 'menu') {
+      if (sheet) {
+        sheet.classList.remove('hidden');
+        requestAnimationFrame(() => sheet.classList.add('open'));
+      }
     }
     this.syncRightDock();
   }
@@ -489,9 +599,9 @@ class App {
         e.stopPropagation();
         tvMenuDropdown.classList.toggle("hidden");
       };
-      document.addEventListener("click", (e) => {
+      document.addEventListener('click', (e) => {
         if (!tvMenuBtn.contains(e.target) && !tvMenuDropdown.contains(e.target)) {
-          tvMenuDropdown.classList.add("hidden");
+          tvMenuDropdown.classList.add('hidden');
         }
       });
       const menuThemeBtn = $("#menuThemeBtn");
@@ -554,11 +664,13 @@ class App {
     const sideEl = $(".side");
     const backdropEl = $("#sideBackdrop");
     const toggleSide = (force) => {
-      const isOpen = force !== undefined ? force : !sideEl?.classList.contains("open");
-      sideEl?.classList.toggle("open", isOpen);
-      backdropEl?.classList.toggle("open", isOpen);
+      const isOpen = force !== undefined ? force : !sideEl?.classList.contains('open');
+      sideEl?.classList.toggle('open', isOpen);
+      backdropEl?.classList.toggle('open', isOpen);
       this.syncRightDock();
-      setTimeout(() => window.dispatchEvent(new Event("resize")), 220);
+      // Fire resize after animation completes so chart redraws properly
+      clearTimeout(this._resizeTimer);
+      this._resizeTimer = setTimeout(() => window.dispatchEvent(new Event('resize')), 230);
     };
     this.toggleSide = toggleSide;
 
@@ -587,63 +699,41 @@ class App {
     }
 
     // Mobile 5-tab bottom navigation
-    const mobileNav = $("#mobileNav");
+    const mobileNav = $('#mobileNav');
     if (mobileNav) {
       mobileNav.onclick = (e) => {
-        const btn = e.target.closest("[data-tab]");
+        const btn = e.target.closest('[data-tab]');
         if (!btn) return;
+        const drawbarEl = $('#drawbar');
+        drawbarEl?.classList.remove('open');
+        $('#mobileDrawToggle')?.classList.remove('active');
         this.setMobileTab(btn.dataset.tab);
       };
-    }
-
-    // Mobile drawing toggle button
-    const mobileDrawToggle = $("#mobileDrawToggle");
-    const drawbar = $("#drawbar");
-    if (mobileDrawToggle && drawbar) {
-      mobileDrawToggle.onclick = () => {
-        drawbar.classList.toggle("open");
-      };
-    }
-
-    // Mobile slide-up menu sheet
-    const sheet = $("#mobileMenuSheet");
-    const sheetCloseBtn = $("#sheetCloseBtn");
-    const sheetBackdrop = $("#sheetBackdrop") || sheet?.querySelector(".sheet-backdrop");
-    const closeSheet = () => {
-      sheet?.classList.add("hidden");
-      if (this.mobileTab === "menu") this.setMobileTab("chart");
-    };
-    if (sheetCloseBtn) sheetCloseBtn.onclick = closeSheet;
-    if (sheetBackdrop) sheetBackdrop.onclick = closeSheet;
-
-    const mobileSheet = $("#mobileMenuSheet");
-    if (mobileSheet) {
-      mobileSheet.onclick = (e) => {
-        const actBtn = e.target.closest("[data-action]");
+    // mobileSheet is handled via event listener below
+    const mobileSheet2 = $('#mobileMenuSheet');
+    if (mobileSheet2) {
+      mobileSheet2.addEventListener('click', (e) => {
+        const actBtn = e.target.closest('[data-action]');
         if (!actBtn) return;
         const act = actBtn.dataset.action;
         closeSheet();
-        if (act === "theme") this.toggleTheme();
-        else if (act === "settings") this.openSettings();
-        else if (act === "tester") {
-          this.panels.showBottom("tester");
-          this.setMobileTab("chart");
-        } else if (act === "screener") {
-          this.panels.showBottom("screener");
-          this.setMobileTab("chart");
-        } else if (act === "paper") {
-          this.panels.showBottom("paper");
-          this.setMobileTab("chart");
-        } else if (act === "clear-drawings") {
-          this.active?.clearDrawings();
-        } else if (act === "fullscreen") {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {});
-          } else {
-            document.exitFullscreen().catch(() => {});
+        const doAction = () => {
+          if (act === 'theme') this.toggleTheme();
+          else if (act === 'settings') this.openSettings();
+          else if (act === 'tester') { this.panels.showBottom('tester'); this.setMobileTab('chart'); }
+          else if (act === 'screener') { this.panels.showBottom('screener'); this.setMobileTab('chart'); }
+          else if (act === 'paper') { this.panels.showBottom('paper'); this.setMobileTab('chart'); }
+          else if (act === 'editor') { this.panels.showBottom('editor'); this.setMobileTab('chart'); }
+          else if (act === 'clear-indicators') this.clearAllIndicators();
+          else if (act === 'clear-drawings') this.active?.clearDrawings();
+          else if (act === 'fullscreen') {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            else document.exitFullscreen().catch(()=>{});
           }
-        }
-      };
+        };
+        setTimeout(doAction, 300);
+      });
+    }
     }
 
     // Default desktop state: open watchlist on wide screens
@@ -685,7 +775,15 @@ class App {
     const pctBtn = $("#pctBtn");
     if (pctBtn) pctBtn.classList.toggle("on", !!p.cfg.pct);
     const replayBtn = $("#replayBtn");
-    if (replayBtn) replayBtn.classList.toggle("on", !!p.replay);
+    if (replayBtn) replayBtn.classList.toggle('on', !!p.replay);
+    // Update indicator count badge on indicators button
+    // Update indicator count badge
+    const indBadge = document.getElementById('indCount');
+    const indCount = p.cfg.indicators?.length || 0;
+    if (indBadge) {
+      indBadge.textContent = indCount > 0 ? String(indCount) : '';
+      indBadge.style.display = indCount > 0 ? 'inline-flex' : 'none';
+    }
     this.syncRightDock();
   }
 
